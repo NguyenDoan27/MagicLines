@@ -1,0 +1,19 @@
+<resources>
+    <string name="app_name">Magic Lines</string>
+    <string name="settings_icon">redirect to setting screen</string>
+    <string name="background">Background</string>
+    <string name="music">Music</string>
+    <string name="name_music">name music</string>
+    <string name="setting">Setting</string>
+    <string name="sounds">Sounds</string>
+    <string name="language">Language</string>
+    <string name="share">Share</string>
+    <string name="rate">Rate 5 stars</string>
+    <string name="contact">Contact with us</string>
+    <string name="energy">Energy</string>
+    <string name="daily">Daily</string>
+    <string name="more">More</string>
+    <string name="get">Get</string>
+    <string name="ads">Ads</string>
+    <string name="button_continue">Continue</string>
+</resources>

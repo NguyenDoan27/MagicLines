@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Magic Lines</string>
+    <string name="settings_icon">redirect to setting screen</string>
+    <string name="background">Màu nền</string>
+    <string name="music">Nhạc</string>
+    <string name="name_music">name music</string>
+    <string name="setting">Cài đặt</string>
+    <string name="sounds">Nhạc</string>
+    <string name="language">Ngôn ngữ</string>
+    <string name="share">Chia sẻ</string>
+    <string name="rate">Đánh giá 5 sao</string>
+    <string name="contact">Liên hệ</string>
+    <string name="energy">Năng lượng</string>
+    <string name="daily">H.ngày</string>
+    <string name="more">Thêm</string>
+    <string name="get">Nhận</string>
+    <string name="ads">Q.Cáo</string>
+    <string name="button_continue">Tiếp tục</string>
+</resources>
