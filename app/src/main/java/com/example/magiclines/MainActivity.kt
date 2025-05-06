@@ -31,22 +31,18 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import java.util.Date
 import java.util.concurrent.TimeUnit
-import kotlin.collections.arrayListOf
 import androidx.core.graphics.drawable.toDrawable
+import androidx.lifecycle.ProcessLifecycleOwner
+import kotlinx.coroutines.runBlocking
 import java.util.Calendar
 
-class MainActivity :  BaseActivity() {
+class MainActivity :  BaseActivity()  {
     private lateinit var binding: ActivityMainBinding
     private var levelAdapter: LevelPlayerAdapter? = null
     private lateinit var dataStore: SettingDataStore
     private var energyDialogBinding: AddEnergyDialogBinding? = null
     private var dialog: Dialog? = null
-    private var levels = arrayListOf<Level>(
-        Level(1, R.drawable.heart, false),
-        Level(2, R.drawable.circle_bolt, false),
-        Level(3, R.drawable.guitar, false),
-        Level(4, R.drawable.donus, false)
-    )
+    private var levels: ArrayList<Level>? = null
     private var energy: Int? = null
 
     private lateinit var viewModel: EnergyViewModel
@@ -69,6 +65,12 @@ class MainActivity :  BaseActivity() {
         }
         dataStore = SettingDataStore(this@MainActivity)
 
+        levels = java.util.ArrayList<Level>()
+
+        runBlocking {
+            dataStore.initData()
+        }
+
         binding.imgSetting.setOnClickListener {
             val intent = Intent(this@MainActivity, SettingActivity::class.java)
             startActivity(intent)
@@ -76,7 +78,7 @@ class MainActivity :  BaseActivity() {
 
         scheduleEnergyWork()
 
-        levelAdapter = LevelPlayerAdapter(this@MainActivity, levels, object : IOnClick {
+        levelAdapter = LevelPlayerAdapter(this@MainActivity, levels!!, object : IOnClick {
             override fun onclick(position: Int) {
                 lifecycleScope.launch {
                     val newEnergy = energy!! - 1
@@ -110,15 +112,10 @@ class MainActivity :  BaseActivity() {
                 Pair(value,levels)
             }.collect { (value, newLevel) ->
                 energy = value
-                if (newLevel.size < levels.size){
-
-                }else{
-                    levels.clear()
-                    levels.addAll(newLevel)
-                    levelAdapter!!.notifyDataSetChanged()
-                }
+                levels!!.clear()
+                levels!!.addAll(newLevel)
+                levelAdapter!!.notifyDataSetChanged()
             }
-
         }
 
 
@@ -190,5 +187,4 @@ class MainActivity :  BaseActivity() {
                 cal1.get(Calendar.MONTH) == cal2.get(Calendar.MONTH) &&
                 cal1.get(Calendar.DAY_OF_MONTH) == cal2.get(Calendar.DAY_OF_MONTH)
     }
-
 }

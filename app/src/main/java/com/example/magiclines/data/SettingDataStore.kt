@@ -9,22 +9,14 @@ import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
-import com.example.magiclines.data.PreferenceKey
+import com.example.magiclines.R
+import com.example.magiclines.models.Audio
 import com.example.magiclines.models.Level
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.launch
-import java.util.Calendar
 import java.util.Date
 
 private const val DEVICE_CONFIG = "config"
@@ -32,6 +24,40 @@ private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(na
 
 class SettingDataStore(private val context: Context) {
     private val gson = Gson()
+    private val sounds = arrayListOf<Audio>(
+        Audio("Memories", R.raw.our_memories),
+        Audio("Pure love", R.raw.pure_love)
+    )
+
+    private var levels = arrayListOf<Level>(
+        Level(1, R.drawable.heart, false),
+        Level(2, R.drawable.circle_bolt, false),
+        Level(3, R.drawable.guitar, false),
+        Level(4, R.drawable.donus, false)
+    )
+
+    suspend fun initData(){
+        context.dataStore.edit{ preferences ->
+            preferences[PreferenceKey.SOUNDS] = gson.toJson(sounds)
+        }
+
+        context.dataStore.edit { preferences ->
+            if (!preferences.contains(PreferenceKey.PROGRESS_KEY)) {
+                preferences[PreferenceKey.PROGRESS_KEY] = gson.toJson(levels)
+            }else{
+                val data = levelsFlow.first()
+                if (data.size < levels.size ){
+                    preferences[PreferenceKey.PROGRESS_KEY] = gson.toJson(levels)
+                }
+            }
+        }
+    }
+
+    val musics: Flow<List<Audio>> =  context.dataStore.data.map{ preferences ->
+        val jsonString = preferences[PreferenceKey.SOUNDS] ?: return@map emptyList()
+        val type = object : TypeToken<List<Audio>>() {}.type
+        gson.fromJson(jsonString, type) ?: emptyList()
+    }
 
     suspend fun saveMusicPosition(position: Int) {
         context.dataStore.edit { preferences ->
@@ -120,4 +146,5 @@ private object PreferenceKey {
     val ENERGY = intPreferencesKey("energy")
     val DATE_GET_ENERGY = longPreferencesKey("date_get_energy")
     val LANGUAGE = stringPreferencesKey("language")
+    val SOUNDS = stringPreferencesKey("sounds")
 }

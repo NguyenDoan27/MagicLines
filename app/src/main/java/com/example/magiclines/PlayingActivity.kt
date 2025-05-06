@@ -43,6 +43,8 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 import androidx.core.graphics.createBitmap
 import com.example.magiclines.services.SoundService
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.runBlocking
 import java.io.File
 import java.io.FileOutputStream
 import java.text.SimpleDateFormat
@@ -61,12 +63,7 @@ class PlayingActivity : BaseActivity() {
     private var customview: View? = null
     private var position: Int = -1
     private var myList: ArrayList<Level>? = null
-
-
-    val musics = listOf(
-        Audio("Memories", R.raw.our_memories),
-        Audio("Pure love", R.raw.pure_love)
-    )
+    private var musics: List<Audio>? = null
 
     val backgrounds = listOf<Color>(
         Color("Orchid", "#DA70D6"),
@@ -109,11 +106,13 @@ class PlayingActivity : BaseActivity() {
         binding.imgBack.setOnClickListener {
             lifecycleScope.launch {
                 dataStore.saveLevel(myList!!)
-                Log.e(TAG, "onCreate: ${myList!![0].getIsComplete()}", )
                 finish()
             }
         }
 
+        runBlocking {
+            musics = dataStore.musics.first()
+        }
 
             lifecycleScope.launch {
                 combine(
@@ -181,7 +180,7 @@ class PlayingActivity : BaseActivity() {
                 dialogBinding = EffectBottomDialogBinding.inflate(layoutInflater)
                 setContentView(dialogBinding?.root ?: return@apply)
 
-                val musicAdapter = MusicAdapter(this@PlayingActivity, musics, currentMusicPosition, object: IOnClick {
+                val musicAdapter = MusicAdapter(this@PlayingActivity, musics!!, currentMusicPosition, object: IOnClick {
                     override fun onclick(position: Int) {
                         lifecycleScope.launch { dataStore.saveMusicPosition(position) }
                         val intent = Intent(this@PlayingActivity, SoundService::class.java)

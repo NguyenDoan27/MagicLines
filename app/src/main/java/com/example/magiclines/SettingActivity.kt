@@ -9,17 +9,20 @@ import android.os.Bundle
 import android.view.WindowManager.LayoutParams
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
-import androidx.appcompat.app.ActionBar
-import androidx.appcompat.app.AppCompatActivity
-import androidx.constraintlayout.widget.ConstraintSet
 import androidx.core.graphics.drawable.toDrawable
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.example.magiclines.databinding.ActivitySettingBinding
 import androidx.core.net.toUri
 import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.magiclines.adapters.MusicAdapter
 import com.example.magiclines.data.SettingDataStore
 import com.example.magiclines.databinding.SelectLanguageDialogBinding
+import com.example.magiclines.interfaces.IOnClick
+import com.example.magiclines.models.Audio
+import com.example.magiclines.services.SoundService
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -30,6 +33,10 @@ class SettingActivity : BaseActivity() {
     private var dialog: Dialog? = null
     private var languageCode: String? = null
     private var dataStore: SettingDataStore? = null
+    private var sounds: List<Audio>? = null
+    private var position: Int = -1
+    private var musicAdapter: MusicAdapter? = null
+    private var soundState = true
     @SuppressLint("QueryPermissionsNeeded")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -42,6 +49,50 @@ class SettingActivity : BaseActivity() {
             insets
         }
         dataStore = SettingDataStore(applicationContext)
+
+        lifecycleScope.launch {
+            combine(
+                dataStore!!.musics,
+                dataStore!!.readMusicPosition(),
+                dataStore!!.readStateSound()
+            ) {musics, position, state -> Triple(musics, position, state) }.collect { (musics, pos, state) ->
+                sounds = musics
+                position = pos
+                soundState = state
+            }
+
+        }
+        musicAdapter = MusicAdapter(applicationContext, sounds!!, position, object: IOnClick{
+            override fun onclick(position: Int) {
+                lifecycleScope.launch { dataStore!!.saveMusicPosition(position) }
+                val intent = Intent(this@SettingActivity, SoundService::class.java)
+                stopService(intent)
+                startService(intent)
+            }
+
+        })
+
+        binding.rcvSounds.apply {
+            layoutManager = LinearLayoutManager(
+                this@SettingActivity,
+                LinearLayoutManager.HORIZONTAL,
+                false
+            )
+            adapter = musicAdapter
+        }
+
+        binding.swMusic.isChecked = soundState
+        binding.swMusic.setOnCheckedChangeListener{ _, isChecked ->
+            lifecycleScope.launch {
+                dataStore!!.saveStateSound(isChecked)
+                val intent = Intent(this@SettingActivity, SoundService::class.java)
+                if (isChecked) {
+                    startService(intent)
+                } else {
+                    stopService(intent)
+                }
+            }
+        }
         binding.layoutContact.setOnClickListener {
             val emailUri = "mailto:doannguyen22702@gmail.com" +
                     "?subject=" + Uri.encode("Report my app")
@@ -93,9 +144,9 @@ class SettingActivity : BaseActivity() {
                     LayoutParams.WRAP_CONTENT
                 )
                 window?.setBackgroundDrawable(Color.TRANSPARENT.toDrawable())
-                runBlocking { launch {
+                runBlocking {
                     languageCode = dataStore!!.language.first()
-                } }
+                 }
 
                 when(languageCode){
                     "vi" -> dialogBinding!!.layoutVietnamese.isEnabled = false
@@ -104,7 +155,7 @@ class SettingActivity : BaseActivity() {
                 dialogBinding!!.layoutVietnamese.setOnClickListener {
                     dialogBinding!!.layoutEnglish.isEnabled = true
                     dialogBinding!!.layoutVietnamese.isEnabled = false
-                    lifecycleScope.launch {
+                    runBlocking {
                         dataStore!!.saveLanguage("vi")
                     }
                 }
@@ -112,7 +163,7 @@ class SettingActivity : BaseActivity() {
                 dialogBinding!!.layoutEnglish.setOnClickListener {
                     dialogBinding!!.layoutEnglish.isEnabled = false
                     dialogBinding!!.layoutVietnamese.isEnabled = true
-                    lifecycleScope.launch {
+                    runBlocking {
                         dataStore!!.saveLanguage("en")
                     }
                 }
