@@ -4,21 +4,14 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
-import android.media.MediaPlayer
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
-import androidx.datastore.preferences.preferencesDataStore
 import androidx.recyclerview.widget.RecyclerView
 import com.example.magiclines.R
-import com.example.magiclines.data.SettingDataStore
 import com.example.magiclines.databinding.MusicItemBinding
 import com.example.magiclines.interfaces.IOnClick
 import com.example.magiclines.models.Audio
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.launch
 
 class MusicAdapter(private val context: Context,
                    private val music: List<Audio>,
@@ -37,7 +30,7 @@ class MusicAdapter(private val context: Context,
         holder.name.text = music[position].getName()
         (holder.itemView.background as GradientDrawable).apply {
             if (position == currentMusicPosition) {
-                setStroke(3, ContextCompat.getColor(context, R.color.light_blue))
+                setStroke(3, ContextCompat.getColor(context, R.color.white))
             } else {
                 setStroke(0, Color.TRANSPARENT)
             }

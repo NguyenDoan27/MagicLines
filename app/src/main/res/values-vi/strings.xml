@@ -17,4 +17,24 @@
     <string name="get">Nhận</string>
     <string name="ads">Q.Cáo</string>
     <string name="button_continue">Tiếp tục</string>
+    <string name="your_score">Điểm của bạn:</string>
+    <string name="heart">Trái tym</string>
+    <string name="circle_bolt">Tia sét</string>
+    <string name="guitar">Đàn ghi-ta</string>
+    <string name="glasses">Cái kính</string>
+    <string name="ice_cream">Cây kem</string>
+    <string name="rocket">Tên lửa</string>
+    <string name="pineapple">Quả dứa</string>
+    <string name="meteorite">Thiên thạch</string>
+    <string name="bicycle">Xe đạp</string>
+    <string name="firework">Pháo hoa</string>
+    <string name="hotdog">Xúc xích</string>
+    <string name="fish">Con cá</string>
+    <string name="heart_fly">Trái tym</string>
+    <string name="pig">Con lợn</string>
+    <string name="skullcap">Đầu lâu</string>
+    <string name="alien">Người ngoài hành tinh</string>
+    <string name="moon">Mặt trăng</string>
+    <string name="orange_juice">Nước cam</string>
+    <string name="crab">Con cua</string>
 </resources>

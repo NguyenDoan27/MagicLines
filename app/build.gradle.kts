@@ -58,4 +58,6 @@ dependencies {
     implementation ("androidx.lifecycle:lifecycle-runtime-ktx:2.6.0")
     implementation ("androidx.lifecycle:lifecycle-viewmodel-ktx:2.4.0")
     implementation ("androidx.lifecycle:lifecycle-process:2.8.7")
+    //konfetti
+    implementation ("nl.dionsegijn:konfetti-xml:2.0.5")
 }

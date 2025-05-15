@@ -7,5 +7,5 @@
         android:left="8sp"
         android:bottom="8sp"
         android:right="8sp"/>
-    <solid android:color="@color/white"/>
+    <solid android:color="@color/dark_blue"/>
 </shape>

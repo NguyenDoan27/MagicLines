@@ -17,4 +17,24 @@
     <string name="get">Get</string>
     <string name="ads">Ads</string>
     <string name="button_continue">Continue</string>
+    <string name="your_score">Your score:</string>
+    <string name="heart">Heart</string>
+    <string name="circle_bolt">Lightning</string>
+    <string name="guitar">Guitar</string>
+    <string name="glasses">Glasses</string>
+    <string name="ice_cream">Ice-cream</string>
+    <string name="rocket">Rocket</string>
+    <string name="pineapple">Pineapple</string>
+    <string name="meteorite">Meteorite</string>
+    <string name="bicycle">Bicycle</string>
+    <string name="firework">Firework</string>
+    <string name="hotdog">Hotdog</string>
+    <string name="fish">Fish</string>
+    <string name="heart_fly">Winged heart</string>
+    <string name="pig">Pig</string>
+    <string name="skullcap">Skullcap</string>
+    <string name="alien">Alien</string>
+    <string name="moon">Moon</string>
+    <string name="orange_juice">Orange juice</string>
+    <string name="crab">Crab</string>
 </resources>

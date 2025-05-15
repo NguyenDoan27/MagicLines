@@ -5,7 +5,6 @@ import android.content.Intent
 import android.media.MediaPlayer
 import android.os.IBinder
 import android.util.Log
-import com.example.magiclines.R
 import com.example.magiclines.data.SettingDataStore
 import com.example.magiclines.models.Audio
 import kotlinx.coroutines.Dispatchers
@@ -14,10 +13,7 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 
 class SoundService: Service() {
-    private val musics = arrayListOf<Audio>(
-        Audio("Memories", R.raw.our_memories),
-        Audio("Pure love", R.raw.pure_love)
-    )
+    private var musics1 = listOf<Audio>()
     private var musicPosition = -1
     private var mediaPlayer: MediaPlayer? = null
     private var dataStore: SettingDataStore? = null
@@ -26,26 +22,28 @@ class SoundService: Service() {
         super.onCreate()
         dataStore = SettingDataStore(applicationContext)
         runBlocking {
-            val (position, state) = withContext(Dispatchers.IO) {
-                Pair(
+            val (position, state, musics) = withContext(Dispatchers.IO) {
+                Triple(
                     dataStore!!.readMusicPosition().first(),
-                    dataStore!!.readStateSound().first()
+                    dataStore!!.readStateSound().first(),
+                    dataStore!!.musics.first()
                 )
             }
             musicPosition = position
             soundState = state
+            musics1 = musics
         }
         try {
             if (musicPosition != -1){
-                mediaPlayer = MediaPlayer.create(this, musics[musicPosition].getRawResourceId() ?: return).apply {
+                mediaPlayer = MediaPlayer.create(this, musics1[musicPosition].getRawResourceId() ?: return).apply {
                     isLooping = true
                 }
             }else{
-                Log.e("TAG", "onCreate: position $musicPosition", )
+                Log.e("TAG", "onCreate1: position $musicPosition", )
             }
 
         }catch (e: Exception){
-            Log.e("TAG", "onCreate: ${e.message}", )
+            Log.e("TAG", "onCreate2: ${e.stackTrace}", )
         }
     }
 

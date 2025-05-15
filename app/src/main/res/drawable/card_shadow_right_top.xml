@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Shadow phía top -->
+    <item android:left="10dp" android:bottom="10dp">
+        <shape android:shape="rectangle">
+            <gradient
+                android:type="radial"
+                android:startColor="#00000000"
+                android:gradientRadius="70%"
+            android:endColor="#ffffff"
+            android:angle="90" />
+            <corners android:radius="4dp" />
+        </shape>
+    </item>
+
+    <!-- Nền chính của Card -->
+    <item android:top="10dp" android:right="10dp">
+        <shape android:shape="rectangle">
+            <solid android:color="@color/white" />
+            <corners android:radius="4dp" />
+        </shape>
+    </item>
+</layer-list>

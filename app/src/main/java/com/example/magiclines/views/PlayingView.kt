@@ -1,5 +1,6 @@
 package com.example.magiclines.views
 
+import android.animation.ObjectAnimator
 import android.animation.ValueAnimator
 import android.annotation.SuppressLint
 import android.app.Dialog
@@ -10,13 +11,16 @@ import android.graphics.Matrix
 import android.graphics.Paint
 import android.graphics.Path
 import android.graphics.RectF
+import android.graphics.drawable.ColorDrawable
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
 import android.view.MotionEvent
 import android.view.View
 import android.view.animation.AccelerateDecelerateInterpolator
+import android.view.animation.AnimationUtils
 import android.widget.Button
+import android.widget.ImageView
 import android.widget.TextView
 import androidx.core.graphics.PathParser
 import com.example.magiclines.R
@@ -25,15 +29,18 @@ import androidx.core.graphics.toColorInt
 import com.example.magiclines.models.Level
 import kotlin.math.abs
 import kotlin.random.Random
+import androidx.core.graphics.drawable.toDrawable
 
 @SuppressLint("ViewConstructor")
-class PlayingView constructor(
+class PlayingView (
     context: Context,
     private val level: Level
 ) : View(context) {
 
     val paths = mutableListOf<PathInfo>()
     private var isTouchEnabled = true
+    private var listener: OnProcessingCompleteListener? = null
+
 
     private var relativeX: Float = 0f
     private var relativeY: Float = 0f
@@ -277,18 +284,32 @@ class PlayingView constructor(
             snapToOriginalPosition()
             level.setIsComplete(true)
             setTouchEnabled(false)
-            Log.e("TAG", "checkAndSnapIfAligned: ${level.getIsComplete()}", )
             val endTime = System.nanoTime()
+            val timeStop = endTime - startTime
+
+            val durationInMs = timeStop / 1_000_000
+
+            val seconds = (durationInMs / 1000) % 60
+            val minutes = (durationInMs / (1000 * 60)) % 60
+
+             when {
+                seconds < 10 -> level.setStar(3)
+                seconds >= 10 && seconds <= 20 -> level.setStar(2)
+                seconds > 20 && minutes >= 1 -> level.setStar(1)
+                else -> level.setStar(0)
+            }
             val handler = Handler(Looper.getMainLooper())
             val action = Runnable {
                 showDialog(endTime)
             }
-            val delayMillis: Long = 1000
+            val delayMillis: Long = 1800
             handler.postDelayed(action, delayMillis)
+            listener?.onComplete()
         }
     }
 
     fun scramblePaths() {
+        startTime = System.nanoTime()
         val maxOffset = 150f
         val randomOffsetX = Random.nextInt(100,150)
         val randomOffsetY = Random.nextInt(100, 150)
@@ -319,24 +340,61 @@ class PlayingView constructor(
             animatorX.start()
             animatorY.start()
         }
-        Log.d("HeartView", "Scramble: randomOffsetX=$randomOffsetX, randomOffsetY=$randomOffsetY")
+
     }
 
+    @SuppressLint("SetTextI18n", "Recycle")
     fun showDialog(endTime: Long){
+        val timeStop = endTime - startTime
 
-        val duration = endTime - startTime
-
-        val durationInMs = duration / 1_000_000
+        val durationInMs = timeStop / 1_000_000
 
         val seconds = (durationInMs / 1000) % 60
         val minutes = (durationInMs / (1000 * 60)) % 60
         val btnContinue = dialog.findViewById<Button>(R.id.btnContinue)
         val txtShowTime = dialog.findViewById<TextView>(R.id.tvFinishTime)
+        val imgStarCenter = dialog.findViewById<ImageView>(R.id.imgCenterStar)
+        val imgStarLeft = dialog.findViewById<ImageView>(R.id.imgLeftStar)
+        val imgStarRight = dialog.findViewById<ImageView>(R.id.imgRightStar)
+
+
+        if( minutes < 1 && seconds > 10 && seconds < 20){
+            imgStarRight.setImageResource(R.drawable.empty_star)
+
+        }else if(minutes < 1 && seconds < 10){
+
+        }else  {
+            imgStarCenter.setImageResource(R.drawable.empty_star)
+            imgStarRight.setImageResource(R.drawable.empty_star)
+
+        }
+
+        imgStarLeft.animate()
+            .setStartDelay(500)
+            .scaleX(1.5f)
+            .scaleY(1.5f)
+            .setDuration(40)
+            .start()
+
+        imgStarCenter.animate()
+            .setStartDelay(800)
+            .scaleX(1.5f)
+            .scaleY(1.5f)
+            .setDuration(500)
+            .start()
+
+        imgStarRight.animate()
+            .setStartDelay(1200)
+            .scaleX(1.5f)
+            .scaleY(1.5f)
+            .setDuration(500)
+            .start()
+
         txtShowTime.text = "\"$minutes\" : \"$seconds\""
         btnContinue.setOnClickListener {
             dialog.dismiss()
         }
-
+        dialog.window!!.setBackgroundDrawable(Color.TRANSPARENT.toDrawable());
         dialog.show()
     }
 
@@ -344,5 +402,12 @@ class PlayingView constructor(
         isTouchEnabled = enabled
     }
 
+    interface OnProcessingCompleteListener{
+        fun onComplete()
+    }
+
+    fun setOnProcessingCompleteListener(listener: OnProcessingCompleteListener) {
+        this.listener = listener
+    }
 
 }

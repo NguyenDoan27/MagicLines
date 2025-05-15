@@ -6,7 +6,16 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".SettingActivity"
-    android:background="@color/ocean_blue">
+    android:background="@drawable/background_setting">
+    <ImageView
+        android:id="@+id/imgBack"
+        android:layout_width="24sp"
+        android:layout_height="24sp"
+        android:src="@drawable/left_back"
+        android:layout_margin="10sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        />
     <TextView
         android:id="@+id/tvSetting"
         android:layout_width="wrap_content"
@@ -14,20 +23,10 @@
         android:text="@string/setting"
         android:textSize="20sp"
         android:layout_marginTop="12sp"
-        android:textColor="@color/sunset_orange"
+        android:textColor="@color/white"
         app:layout_constraintStart_toStartOf="@id/main"
         app:layout_constraintEnd_toEndOf="@id/main"
         app:layout_constraintTop_toTopOf="@id/main"/>
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/sounds"
-        android:textSize="14sp"
-        android:textColor="@color/sunset_orange"
-        android:textStyle="bold"
-        android:layout_margin="8sp"
-        app:layout_constraintStart_toStartOf="@id/main"
-        app:layout_constraintTop_toBottomOf="@id/tvSetting"/>
     <com.google.android.material.switchmaterial.SwitchMaterial
         android:id="@+id/sw_music"
         android:layout_width="wrap_content"
@@ -60,7 +59,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/language"
-            android:textColor="@color/sunset_orange"
+            android:textColor="@color/white"
             android:textStyle="bold"
             android:layout_gravity="center"
             android:layout_marginStart="16sp"
@@ -83,7 +82,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/share"
-            android:textColor="@color/sunset_orange"
+            android:textColor="@color/white"
             android:textStyle="bold"
             android:layout_gravity="center"
             android:layout_marginStart="16sp"
@@ -106,7 +105,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/rate"
-            android:textColor="@color/sunset_orange"
+            android:textColor="@color/white"
             android:textStyle="bold"
             android:layout_gravity="center"
             android:layout_marginStart="16sp"
@@ -124,12 +123,12 @@
         <ImageView
             android:layout_width="32sp"
             android:layout_height="32sp"
-            android:src="@drawable/phone"/>
+            android:src="@drawable/email"/>
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/contact"
-            android:textColor="@color/sunset_orange"
+            android:textColor="@color/white"
             android:textStyle="bold"
             android:layout_gravity="center"
             android:layout_marginStart="16sp"

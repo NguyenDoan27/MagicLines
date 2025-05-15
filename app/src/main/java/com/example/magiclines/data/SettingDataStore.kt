@@ -26,14 +26,33 @@ class SettingDataStore(private val context: Context) {
     private val gson = Gson()
     private val sounds = arrayListOf<Audio>(
         Audio("Memories", R.raw.our_memories),
-        Audio("Pure love", R.raw.pure_love)
+        Audio("Pure love", R.raw.pure_love),
+        Audio("Piano", R.raw.josefpres__piano),
+        Audio("Under_sky", R.raw.under_the_sky),
+        Audio("happy_chill", R.raw.happy_chill),
+        Audio("beat_loop", R.raw.beat_loop_in_a_maj)
     )
 
     private var levels = arrayListOf<Level>(
-        Level(1, R.drawable.heart, false),
-        Level(2, R.drawable.circle_bolt, false),
-        Level(3, R.drawable.guitar, false),
-        Level(4, R.drawable.donus, false)
+        Level(1,R.string.heart, R.drawable.heart, false),
+        Level(2, R.string.circle_bolt, R.drawable.circle_bolt, false),
+        Level(3, R.string.guitar, R.drawable.guitar, false),
+        Level(4, R.string.glasses, R.drawable.zz, false),
+        Level(5, R.string.ice_cream, R.drawable.ice_cream, false),
+        Level(6, R.string.rocket, R.drawable.rocket, false),
+        Level(7, R.string.pineapple, R.drawable.pineapple, false),
+        Level(8, R.string.meteorite, R.drawable.meteorite, false),
+        Level(9, R.string.bicycle, R.drawable.bicycle, false),
+        Level(10, R.string.firework, R.drawable.firework, false),
+        Level(11, R.string.hotdog, R.drawable.hotdog, false),
+        Level(12, R.string.fish, R.drawable.fish, false),
+        Level(13, R.string.heart_fly, R.drawable.hear_fly, false),
+        Level(14, R.string.pig, R.drawable.pig, false),
+        Level(15, R.string.skullcap, R.drawable.skullcap, false),
+        Level(16, R.string.crab, R.drawable.crab, false),
+        Level(17, R.string.moon, R.drawable.moon, false),
+        Level(18, R.string.alien, R.drawable.alien, false),
+        Level(19, R.string.orange_juice, R.drawable.orange_juice, false),
     )
 
     suspend fun initData(){
