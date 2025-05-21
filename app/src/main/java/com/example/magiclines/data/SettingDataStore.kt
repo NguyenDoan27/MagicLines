@@ -34,25 +34,11 @@ class SettingDataStore(private val context: Context) {
     )
 
     private var levels = arrayListOf<Level>(
-        Level(1,R.string.heart, R.drawable.heart, false),
-        Level(2, R.string.circle_bolt, R.drawable.circle_bolt, false),
-        Level(3, R.string.guitar, R.drawable.guitar, false),
-        Level(4, R.string.glasses, R.drawable.zz, false),
-        Level(5, R.string.ice_cream, R.drawable.ice_cream, false),
-        Level(6, R.string.rocket, R.drawable.rocket, false),
-        Level(7, R.string.pineapple, R.drawable.pineapple, false),
-        Level(8, R.string.meteorite, R.drawable.meteorite, false),
-        Level(9, R.string.bicycle, R.drawable.bicycle, false),
-        Level(10, R.string.firework, R.drawable.firework, false),
-        Level(11, R.string.hotdog, R.drawable.hotdog, false),
-        Level(12, R.string.fish, R.drawable.fish, false),
-        Level(13, R.string.heart_fly, R.drawable.hear_fly, false),
-        Level(14, R.string.pig, R.drawable.pig, false),
-        Level(15, R.string.skullcap, R.drawable.skullcap, false),
-        Level(16, R.string.crab, R.drawable.crab, false),
-        Level(17, R.string.moon, R.drawable.moon, false),
-        Level(18, R.string.alien, R.drawable.alien, false),
-        Level(19, R.string.orange_juice, R.drawable.orange_juice, false),
+        Level(2, R.string.orange_juice, R.drawable.frame_6, false,"Action"),
+        Level(3, R.string.orange_juice, R.drawable.frame_7, false,"Symbol"),
+        Level(4, R.string.orange_juice, R.drawable.frame_8, false,"Animal"),
+        Level(5, R.string.orange_juice, R.drawable.frame_10, false,""),
+        Level(6, R.string.orange_juice, R.drawable.vit_test, false,""),
     )
 
     suspend fun initData(){
@@ -109,7 +95,7 @@ class SettingDataStore(private val context: Context) {
 
      fun readStateSound(): Flow<Boolean> {
         return context.dataStore.data.map { preferences ->
-            preferences[PreferenceKey.IS_SOUND] != false
+            preferences[PreferenceKey.IS_SOUND] ?: true
         }
     }
     suspend fun saveLevel(levels: List<Level>){

@@ -1,44 +1,57 @@
 package com.example.magiclines.models
 
+import android.os.Parcel
+import android.os.Parcelable
+import androidx.annotation.Keep
 import java.io.Serializable
 
-class Level: Serializable {
-    private var numLevel: Int? = null
-    private var resourceName: Int? = null
-    private var resourceId: Int? = null
-    private var isComplete: Boolean? = null
+data class Level(
+    var numLevel: Int,
+    var resourceName: Int,
+    var resourceId: Int,
+    var isComplete: Boolean,
+    var category: String
+) : Parcelable {
     private var star: Int? = null
 
-    constructor(numLevel: Int,resourceName: Int, resourceId: Int, isComplete: Boolean){
-        this.numLevel = numLevel
-        this.resourceName = resourceName
-        this.resourceId = resourceId
-        this.isComplete = isComplete
+    constructor(parcel: Parcel) : this(
+        parcel.readInt(),
+        parcel.readInt(),
+        parcel.readInt(),
+        parcel.readByte() != 0.toByte(),
+        parcel.readString()!!
+    ) {
+        star = parcel.readValue(Int::class.java.classLoader) as? Int
     }
 
-    fun getNumLevel(): Int? {
-        return numLevel
+    override fun writeToParcel(parcel: Parcel, flags: Int) {
+        parcel.writeInt(numLevel)
+        parcel.writeInt(resourceName)
+        parcel.writeInt(resourceId)
+        parcel.writeByte(if (isComplete) 1 else 0)
+        parcel.writeValue(star)
+        parcel.writeString(category)
     }
 
-    fun getResourceName(): Int? {
-        return resourceName
+    override fun describeContents(): Int {
+        return 0
     }
 
-    fun getResourceId(): Int? {
-        return resourceId
-    }
+    companion object CREATOR : Parcelable.Creator<Level> {
+        override fun createFromParcel(parcel: Parcel): Level {
+            return Level(parcel)
+        }
 
-    fun getIsComplete(): Boolean? {
-        return isComplete
+        override fun newArray(size: Int): Array<Level?> {
+            return arrayOfNulls(size)
+        }
     }
-    fun setIsComplete(state: Boolean?){
-        this.isComplete = state
-    }
-    fun setStar(star: Int?){
-        this.star = star
-    }
-
     fun getStar(): Int? {
         return star
+    }
+
+    // Hàm để đặt giá trị star
+    fun setStar(star: Int?) {
+        this.star = star
     }
 }

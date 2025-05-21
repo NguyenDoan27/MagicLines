@@ -20,6 +20,7 @@ class SoundService: Service() {
     private var soundState: Boolean = true
     override fun onCreate() {
         super.onCreate()
+        Log.e("TAG", "onCreate: service ", )
         dataStore = SettingDataStore(applicationContext)
         runBlocking {
             val (position, state, musics) = withContext(Dispatchers.IO) {
@@ -35,7 +36,7 @@ class SoundService: Service() {
         }
         try {
             if (musicPosition != -1){
-                mediaPlayer = MediaPlayer.create(this, musics1[musicPosition].getRawResourceId() ?: return).apply {
+                mediaPlayer = MediaPlayer.create(this, musics1[musicPosition].rawResourceId).apply {
                     isLooping = true
                 }
             }else{

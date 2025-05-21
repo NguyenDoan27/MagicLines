@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
+    id("androidx.navigation.safeargs")
 }
 
 android {
@@ -60,4 +61,12 @@ dependencies {
     implementation ("androidx.lifecycle:lifecycle-process:2.8.7")
     //konfetti
     implementation ("nl.dionsegijn:konfetti-xml:2.0.5")
+    //navigation
+    implementation ("androidx.navigation:navigation-fragment-ktx:2.9.0")
+    implementation ("androidx.navigation:navigation-ui-ktx:2.9.0")
+    //glide
+    implementation ("com.github.bumptech.glide:glide:4.16.0")
+    annotationProcessor("com.github.bumptech.glide:compiler:4.11.0")
+    // dot indicator
+    implementation("com.tbuonomo:dotsindicator:5.1.0")
 }

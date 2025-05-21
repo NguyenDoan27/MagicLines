@@ -1,58 +1,58 @@
 package com.example.magiclines
 
-import android.annotation.SuppressLint
-import android.app.Dialog
-import android.content.Intent
-import android.graphics.Color
+
+import android.app.Application
+import android.content.Context
+import android.os.Build
 import android.os.Bundle
-import android.util.Log
-import android.widget.Toast
+import android.os.LocaleList
 import androidx.activity.enableEdgeToEdge
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.lifecycleScope
-import androidx.recyclerview.widget.GridLayoutManager
-import androidx.work.ExistingWorkPolicy
-import androidx.work.OneTimeWorkRequestBuilder
-import androidx.work.WorkManager
-import com.example.magiclines.adapters.LevelPlayerAdapter
-import com.example.magiclines.data.EnergyWorker
+import androidx.lifecycle.Lifecycle
 import com.example.magiclines.data.SettingDataStore
 import com.example.magiclines.databinding.ActivityMainBinding
-import com.example.magiclines.databinding.AddEnergyDialogBinding
-import com.example.magiclines.interfaces.IOnClick
-import com.example.magiclines.models.Level
-import com.example.magiclines.viewModels.EnergyViewModel
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
-import java.util.Date
-import java.util.concurrent.TimeUnit
-import androidx.core.graphics.drawable.toDrawable
-import java.util.Calendar
+import androidx.lifecycle.ProcessLifecycleOwner
+import androidx.lifecycle.lifecycleScope
+import com.example.magiclines.data.SoundManager
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flowOn
+import java.util.Locale
 
-class MainActivity : BaseActivity() {
+class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
-    private lateinit var dataStore: SettingDataStore
-    private lateinit var viewModel: EnergyViewModel
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main) // Sử dụng Dispatchers.Main
+    private lateinit var soundManager: SoundManager
 
-    private var levelAdapter: LevelPlayerAdapter? = null
-    private var energyDialogBinding: AddEnergyDialogBinding? = null
-    private var dialog: Dialog? = null
-    private var levels: ArrayList<Level> = arrayListOf()
-    private var energy: Int = 0
+    private val dataStore by lazy { SettingDataStore(applicationContext) }
+    private var currentLanguage: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setupView()
-        initViewModel()
-        initDataStore()
-        setupAdapters()
-        setupListeners()
-        observeData()
-        scheduleEnergyWork()
+
+        val dataStore = SettingDataStore(applicationContext)
+        scope.launch {
+
+            dataStore.readStateSound()
+                .flowOn(Dispatchers.IO)
+                .collect { isSound ->
+                    soundManager = SoundManager(applicationContext, isSound)
+                    ProcessLifecycleOwner.get().lifecycle.addObserver(soundManager)
+                }
+        }
+
+        lifecycleScope.launch {
+            val initialLanguage = dataStore.language.first()
+            updateLocale(initialLanguage)
+        }
     }
 
     private fun setupView() {
@@ -67,147 +67,71 @@ class MainActivity : BaseActivity() {
         }
     }
 
-    private fun initViewModel() {
-        viewModel = ViewModelProvider(this)[EnergyViewModel::class.java]
-        viewModel.energy.observe(this) { energy ->
-            updateEnergyView(energy)
-        }
+    override fun onStart() {
+        super.onStart()
+        observeLanguageChanges()
     }
 
-    private fun initDataStore() {
-        dataStore = SettingDataStore(this)
+
+    private fun observeLanguageChanges() {
         lifecycleScope.launch {
-            dataStore.initData()
-        }
-    }
+            dataStore.language
+                .distinctUntilChanged()
+                .collect { newLanguage ->
+                    if (newLanguage != currentLanguage) {
+                        currentLanguage = newLanguage
+                        updateLocale(newLanguage)
 
-    private fun setupAdapters() {
-        levelAdapter = LevelPlayerAdapter(this, levels, object : IOnClick {
-            override fun onclick(position: Int) {
-                handleLevelClick(position)
-            }
-        })
-
-        binding.rcvLevelPlayer.apply {
-            layoutManager = GridLayoutManager(this@MainActivity, 2)
-            adapter = levelAdapter
-        }
-    }
-
-    private fun setupListeners() {
-        binding.apply {
-            imgSetting.setOnClickListener {
-                startActivity(Intent(this@MainActivity, SettingActivity::class.java))
-            }
-            tvPower.setOnClickListener {
-                showEnergyDialog()
-            }
-        }
-    }
-
-    @SuppressLint("NotifyDataSetChanged")
-    private fun observeData() {
-        lifecycleScope.launch {
-            combine(dataStore.energy, dataStore.levelsFlow) { energy, levels ->
-                Pair(energy, levels)
-            }.collect { (currentEnergy, currentLevels) ->
-                energy = currentEnergy
-                levels.clear()
-                levels.addAll(currentLevels)
-                levelAdapter?.notifyDataSetChanged()
-            }
-        }
-    }
-
-    private fun handleLevelClick(position: Int) {
-        lifecycleScope.launch {
-            val newEnergy = energy - 1
-            if (newEnergy < 5) {
-                scheduleEnergyWork()
-            }
-
-            if (newEnergy < 0) {
-                showEnergyDialog()
-            }else{
-                dataStore.saveEnergy(newEnergy)
-
-                Intent(this@MainActivity, PlayingActivity::class.java).apply {
-                    putExtra("levels", levels)
-                    putExtra("position", position)
-                    startActivity(this)
+                        onLanguageChanged(newLanguage)
+                    }
                 }
-            }
-
         }
     }
 
-    fun scheduleEnergyWork() {
-        val initialWorkRequest = OneTimeWorkRequestBuilder<EnergyWorker>()
-            .setInitialDelay(1, TimeUnit.MINUTES)
-            .build()
+    protected open fun onLanguageChanged(newLanguage: String) {
 
-        WorkManager.getInstance(applicationContext).enqueueUniqueWork(
-            "EnergyWork",
-            ExistingWorkPolicy.KEEP,
-            initialWorkRequest
-        )
     }
 
-    private fun updateEnergyView(energy: Int) {
-        binding.tvPower.text = energy.toString()
-    }
+    private fun updateLocale(languageCode: String) {
+        val config = resources.configuration
+        val locale = try {
+            Locale(languageCode)
+        } catch (e: IllegalArgumentException) {
+            Locale.getDefault()
+        }
 
-    private fun showEnergyDialog() {
-        if (isFinishing || isDestroyed) return
+        Locale.setDefault(locale)
 
-        try {
-            dialog?.dismiss()
-            energyDialogBinding = AddEnergyDialogBinding.inflate(layoutInflater)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            config.setLocale(locale)
+            config.setLocales(LocaleList(locale))
+        } else {
+            config.locale = locale
+        }
 
-            dialog = Dialog(this).apply {
-                setContentView(energyDialogBinding?.root ?: return@apply)
-                window?.apply {
-                    setLayout(550, 400)
-                    setBackgroundDrawable(Color.TRANSPARENT.toDrawable())
-                }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+            applicationContext.createConfigurationContext(config)
+        }
 
-                setupEnergyDialogButtons()
-                setOnDismissListener { energyDialogBinding = null }
-                show()
-            }
-        } catch (e: Exception) {
-            Log.e("MainActivity", "Error showing energy dialog", e)
+        resources.updateConfiguration(config, resources.displayMetrics)
+
+        if (lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) {
+            recreate()
         }
     }
 
-    private fun setupEnergyDialogButtons() {
+    override fun attachBaseContext(newBase: Context) {
+        super.attachBaseContext(newBase)
+
         lifecycleScope.launch {
-            val savedDate = dataStore.date.first()
-            val currentDate = Date()
-
-            energyDialogBinding?.btnGetEnergy?.isEnabled =
-                !(savedDate != null && isSameDay(savedDate, currentDate))
-        }
-
-        energyDialogBinding?.apply {
-            btnGetEnergy.setOnClickListener {
-                lifecycleScope.launch {
-                    dataStore.saveEnergy(energy + 1)
-                    dataStore.saveDate(Date())
-                }
-                btnGetEnergy.isEnabled = false
-            }
-            btnLoadAds.setOnClickListener {
-                Toast.makeText(this@MainActivity, "Load Ads", Toast.LENGTH_SHORT).show()
-            }
+            val language = dataStore.language.first()
+            updateLocale(language)
         }
     }
 
-    private fun isSameDay(date1: Date, date2: Date): Boolean {
-        val cal1 = Calendar.getInstance().apply { time = date1 }
-        val cal2 = Calendar.getInstance().apply { time = date2 }
-        return cal1.get(Calendar.YEAR) == cal2.get(Calendar.YEAR) &&
-                cal1.get(Calendar.MONTH) == cal2.get(Calendar.MONTH) &&
-                cal1.get(Calendar.DAY_OF_MONTH) == cal2.get(Calendar.DAY_OF_MONTH)
+    override fun onDestroy() {
+        super.onDestroy()
     }
+
+
 }

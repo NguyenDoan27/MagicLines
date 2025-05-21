@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/navigation"
+    app:startDestination="@id/splashFragment">
+    <fragment
+        android:name="com.example.magiclines.fragments.HomeFragment"
+        android:id="@+id/homeFragment"
+        android:label="Home"
+        app:layout="@layout/fragment_home"
+        tools:layout="@layout/fragment_home">
+        <action android:id="@+id/action_homeFragment_to_selectionLevelFragment"
+            app:destination="@id/selectLevelFragment"/>
+        <action android:id="@+id/action_homeFragment_to_collectionFragment"
+            app:destination="@id/collectionFragment"/>
+        <action android:id="@+id/action_homeFragment_to_settingFragment"
+            app:destination="@id/settingsFragment"/>
+    </fragment>
+    <fragment
+        android:name="com.example.magiclines.fragments.CollectionFragment"
+        android:id="@+id/collectionFragment"
+        android:label="Library"
+        app:layout="@layout/fragment_collection"
+        tools:layout="@layout/fragment_collection">
+        <action android:id="@+id/action_collectionFragment_to_showCollectionFragment"
+            app:destination="@id/showCollectionFragment">
+            <argument android:name="level"
+                app:argType="com.example.magiclines.models.Level"/>
+        </action>
+    </fragment>
+    <fragment
+        android:name="com.example.magiclines.fragments.PlayingFragment"
+        android:id="@+id/playingFragment"
+        android:label="Playing"
+        app:layout="@layout/fragment_playing"
+        tools:layout="@layout/fragment_playing">
+        <argument android:name="levels"
+            app:argType="com.example.magiclines.models.Level[]"/>
+        <argument android:name="position" app:argType="integer"/>
+    </fragment>
+    <fragment
+        android:name="com.example.magiclines.fragments.SettingFragment"
+        android:id="@+id/settingsFragment"
+        android:label="Settings"
+        app:layout="@layout/fragment_setting"
+        tools:layout="@layout/fragment_setting"/>
+    <fragment
+        android:name="com.example.magiclines.fragments.SelectionLevelFragment"
+        android:id="@+id/selectLevelFragment"
+        android:label="Select Level"
+        app:layout="@layout/fragment_selection_level"
+        tools:layout="@layout/fragment_selection_level">
+        <action android:id="@+id/action_selectLevelFragment_to_playingFragment"
+            app:destination="@id/playingFragment">
+            <argument android:name="position" app:argType="integer"/>
+            <argument
+                android:name="levels"
+                app:argType="com.example.magiclines.models.Level[]"/>
+        </action>
+    </fragment>
+    <fragment
+        android:name="com.example.magiclines.fragments.SplashFragment"
+        android:id="@+id/splashFragment"
+        android:label="Splash"
+        app:layout="@layout/fragment_splash"
+        tools:layout="@layout/fragment_splash">
+        <action android:id="@+id/action_splashFragment_to_homeFragment"
+            app:destination="@id/homeFragment"/>
+    </fragment>
+    <fragment android:name="com.example.magiclines.fragments.ShowCollectionFragment"
+        android:id="@+id/showCollectionFragment"
+        android:label="Show Collection"
+        app:layout="@layout/fragment_show_collection"
+        tools:layout="@layout/fragment_show_collection">
+        <argument android:name="level"
+            app:argType="com.example.magiclines.models.Level"/>
+    </fragment>
+
+</navigation>
