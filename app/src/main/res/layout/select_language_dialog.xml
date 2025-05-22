@@ -2,7 +2,7 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@drawable/background_dialog"
+    android:background="@drawable/exit_dialog_background"
     android:padding="12sp"
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <TextView
@@ -19,11 +19,14 @@
         />
     <androidx.appcompat.widget.LinearLayoutCompat
         android:id="@+id/layout_vietnamese"
-        android:layout_width="match_parent"
+        android:layout_width="300sp"
         android:layout_height="wrap_content"
         android:background="@drawable/language_selection"
         android:orientation="horizontal"
         android:layout_marginTop="12sp"
+        android:layout_marginHorizontal="20sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@id/tvLanguage">
         <ImageView
             android:layout_width="32sp"
@@ -39,11 +42,16 @@
     </androidx.appcompat.widget.LinearLayoutCompat>
     <androidx.appcompat.widget.LinearLayoutCompat
         android:id="@+id/layout_english"
-        android:layout_width="match_parent"
+        android:layout_width="300sp"
         android:layout_height="wrap_content"
         android:background="@drawable/language_selection"
         android:orientation="horizontal"
         android:layout_marginTop="12sp"
+        android:layout_marginHorizontal="20sp"
+        android:layout_marginBottom="10sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintTop_toBottomOf="@id/layout_vietnamese">
         <ImageView
             android:layout_width="32sp"
