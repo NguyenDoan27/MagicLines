@@ -16,11 +16,13 @@ import android.graphics.drawable.ColorDrawable
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
+import android.view.Gravity
 import android.view.MotionEvent
 import android.view.View
 import android.view.animation.AccelerateDecelerateInterpolator
 import android.view.animation.AnimationUtils
 import android.widget.Button
+import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.core.graphics.PathParser
@@ -47,7 +49,7 @@ class PlayingView(
     private var touchX: Float = 0f
     private var touchY: Float = 0f
     private val matrix = Matrix()
-    private var scale: Float = 1f
+
     private var dialog: Dialog
     private var startTime: Long = 0
     private var directX = -1
@@ -145,10 +147,10 @@ class PlayingView(
                             this.color = strokeColor ?: fillColor
                             this.isAntiAlias = true
                             this.style = if (strokeColor != null) Paint.Style.STROKE else Paint.Style.FILL
-                            this.strokeWidth = if (strokeColor != null) strokeWidth + 8f else 0f // Tăng strokeWidth cho glow
+                            this.strokeWidth = if (strokeColor != null) strokeWidth + 10f else 0f // Tăng strokeWidth cho glow
                             this.setMaskFilter(BlurMaskFilter(10f, BlurMaskFilter.Blur.NORMAL)) // Hiệu ứng glow
 
-                            this.alpha = 100 // Độ trong suốt của glow (0-255)
+                            this.alpha = 250 // Độ trong suốt của glow (0-255)
                         }
                     } else {
                         null
@@ -172,10 +174,10 @@ class PlayingView(
         paths.forEach { path ->
             canvas.save()
             matrix.reset()
-            matrix.postScale(scale, scale, relativeX, relativeY)
+
             matrix.postTranslate(
-                path.offsetX - path.initialX * scale - path.width / 2,
-                path.offsetY - path.initialY * scale - path.height / 2
+                path.offsetX - path.initialX  - path.width / 2,
+                path.offsetY - path.initialY  - path.height / 2
             )
             canvas.concat(matrix)
             path.glowPaint?.let { canvas.drawPath(path.path, it) }
@@ -190,16 +192,22 @@ class PlayingView(
         relativeX = w / 2f
         relativeY = h / 2f
 
+        post {
+            (layoutParams as? FrameLayout.LayoutParams)?.let {
+                it.gravity = Gravity.CENTER
+                layoutParams = it
+            }
+        }
         paths.forEach { path ->
-            scale = minOf(w / path.width, h / path.height) * 0.8f
+
             path.directionX = if (Random.nextBoolean()) 1 else -1
             path.directionY = if (Random.nextBoolean()) 1 else -1
             directX *= -1
             directY *= -1
             path.centerX = relativeX
             path.centerY = relativeY
-            path.offsetX = path.centerX + path.initialX * scale
-            path.offsetY = path.centerY + path.initialY * scale
+            path.offsetX = path.centerX + path.initialX
+            path.offsetY = path.centerY + path.initialY
             path.x = relativeX + path.initialX
             path.y = relativeY + path.initialY
         }
@@ -263,8 +271,8 @@ class PlayingView(
 
     private fun snapToOriginalPosition() {
         paths.forEach { path ->
-            val targetOffsetX = path.centerX + path.initialX * scale
-            val targetOffsetY = path.centerY + path.initialY * scale
+            val targetOffsetX = path.centerX + path.initialX
+            val targetOffsetY = path.centerY + path.initialY
 
             val animatorX = ValueAnimator.ofFloat(path.offsetX, targetOffsetX).apply {
                 duration = 300
@@ -293,10 +301,10 @@ class PlayingView(
     }
 
     private fun checkAndSnapIfAligned() {
-        val threshold = 50f
+        val threshold = 5f
         val allAligned = paths.all { path ->
-            val targetOffsetX = path.centerX + path.initialX * scale
-            val targetOffsetY = path.centerY + path.initialY * scale
+            val targetOffsetX = path.centerX + path.initialX
+            val targetOffsetY = path.centerY + path.initialY
             abs(path.offsetX - targetOffsetX) < threshold && abs(path.offsetY - targetOffsetY) < threshold
         }
 
@@ -333,9 +341,9 @@ class PlayingView(
 
         paths.forEach { path ->
             if (path.centerX == 0f || path.centerY == 0f) return@forEach
-            val targetOffsetX = (path.centerX + path.initialX * scale + randomOffsetX * path.directionX)
+            val targetOffsetX = (path.centerX + path.initialX  + randomOffsetX * path.directionX)
                 .coerceIn(path.x - maxOffset, path.x + maxOffset)
-            val targetOffsetY = (path.centerY + path.initialY * scale + randomOffsetX * path.directionY)
+            val targetOffsetY = (path.centerY + path.initialY  + randomOffsetX * path.directionY)
                 .coerceIn(path.y - maxOffset, path.y + maxOffset)
 
             val animatorX = ValueAnimator.ofFloat(path.offsetX, targetOffsetX).apply {
@@ -372,9 +380,18 @@ class PlayingView(
         val imgStarRight = dialog.findViewById<ImageView>(R.id.imgRightStar)
 
         when {
-            seconds < 10 && minutes <= 1 -> imgStarCenter.setImageResource(R.drawable.favourites)
-            seconds >= 10 && seconds <= 20 && minutes <= 1-> imgStarRight.setImageResource(R.drawable.empty_star)
+            seconds < 10 && minutes <= 1 -> {
+                imgStarLeft.setImageResource(R.drawable.favourites)
+                imgStarCenter.setImageResource(R.drawable.favourites)
+                imgStarRight.setImageResource(R.drawable.favourites)
+            }
+            seconds >= 10 && seconds <= 20 && minutes <= 1-> {
+                imgStarLeft.setImageResource(R.drawable.favourites)
+                imgStarCenter.setImageResource(R.drawable.favourites)
+                imgStarRight.setImageResource(R.drawable.empty_star)
+            }
             else -> {
+                imgStarLeft.setImageResource(R.drawable.favourites)
                 imgStarCenter.setImageResource(R.drawable.empty_star)
                 imgStarRight.setImageResource(R.drawable.empty_star)
             }

@@ -5,22 +5,25 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/background_app">
+    android:background="@drawable/background_app1">
 
     <ImageView
         android:id="@+id/imgBack"
-        android:layout_width="32sp"
-        android:layout_height="32sp"
+        android:layout_width="48sp"
+        android:layout_height="48sp"
         android:src="@drawable/left_back"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        android:layout_margin="18sp"/>
+        android:layout_margin="18sp"
+        android:scaleX="3"
+        android:scaleY="3"/>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rcv_category"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:layout_constraintTop_toBottomOf="@id/imgBack"
+        android:background="@drawable/category_recyclerview_background"
         android:layout_marginTop="12sp"
         android:layout_marginHorizontal="8sp"
         />
@@ -35,5 +38,28 @@
             android:layout_height="wrap_content"
             />
     </ScrollView>
-
+    <LinearLayout
+        android:id="@+id/llNoCollection"
+        android:layout_marginTop="28sp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/rcv_category"
+        android:orientation="vertical">
+        <ImageView
+            android:layout_width="120dp"
+            android:layout_height="117sp"
+            android:src="@drawable/box"
+            android:layout_gravity="center"
+            />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Look like you don't have any collection"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:textColor="@color/white"
+            android:gravity="center"/>
+    </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,6 +1,7 @@
 package com.example.magiclines.fragments
 
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -18,11 +19,11 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 
-class CollectionFragment : Fragment() {
+class CollectionFragment : Fragment(), LevelPlayerAdapter2.FilterListener {
 
     private lateinit var binding: FragmentCollectionBinding
     private var categoryAdapter: CategoryAdapter? = null
-    private val category = listOf<String>("All", "Action", "Animal", "Symbol")
+    private val category = listOf<String>("All", "Animal", "Anime", "Kawaii")
     private var dataStore: SettingDataStore? = null
     private var levels = mutableListOf<Level>()
     private var currentCategory = 0
@@ -34,21 +35,35 @@ class CollectionFragment : Fragment() {
 
         categoryAdapter = CategoryAdapter(requireContext(),currentCategory, category){category, position ->
             categoryAdapter!!.setCurrentCategory(position)
-            if (position == 0) levelAdapter!!.setOriginalItems() else levelAdapter!!.filter?.filter(category)
+            if (position == 0) {
+                levelAdapter!!.setOriginalItems()
+                onResume()
+            }else levelAdapter!!.filter?.filter(category)
         }
 
-        levelAdapter = LevelPlayerAdapter2(requireContext()){position ->
+        levelAdapter = LevelPlayerAdapter2(requireContext(), this){position ->
             val action = CollectionFragmentDirections.actionCollectionFragmentToShowCollectionFragment(levels[position])
             findNavController().navigate(action)
         }
 
         dataStore = SettingDataStore(requireContext())
 
+    }
+
+    override fun onResume() {
+        super.onResume()
         lifecycleScope.launch {
+            levels.clear()
             val data = dataStore!!.levelsFlow.first()
             for (i in data){
                 if (i.isComplete) levels.add(i)
             }
+        }
+
+        if (levelAdapter!!.getItemsFiltered().isEmpty()){
+            binding.llNoCollection.visibility = View.VISIBLE
+        }else{
+            binding.llNoCollection.visibility = View.GONE
         }
 
     }
@@ -76,6 +91,14 @@ class CollectionFragment : Fragment() {
             layoutManager = GridLayoutManager(requireContext(), 2)
             adapter = levelAdapter
             levelAdapter!!.setItems(levels)
+        }
+    }
+
+    override fun onFilterApplied(filteredList: List<Level>) {
+        if (filteredList.isEmpty()){
+            binding.llNoCollection.visibility = View.VISIBLE
+        }else{
+            binding.llNoCollection.visibility = View.GONE
         }
     }
 

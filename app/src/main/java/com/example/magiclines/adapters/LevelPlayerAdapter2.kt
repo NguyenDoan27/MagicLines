@@ -1,8 +1,6 @@
 package com.example.magiclines.adapters
 
-import android.annotation.SuppressLint
 import android.content.Context
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -15,10 +13,9 @@ import com.example.magiclines.R
 import com.example.magiclines.callbacks.LevelCallback
 import com.example.magiclines.databinding.LevelItemBinding
 import com.example.magiclines.models.Level
-import java.util.Locale
 import java.util.concurrent.Executors
 
-class LevelPlayerAdapter2 (val context: Context,  val onItemClick: (Int) -> Unit):
+class LevelPlayerAdapter2 (val context: Context,val listener: FilterListener,  val onItemClick: (Int) -> Unit):
     ListAdapter<Level, LevelPlayerAdapter2.ViewHolder>(AsyncDifferConfig.Builder<Level>(LevelCallback())
         .setBackgroundThreadExecutor(Executors.newSingleThreadExecutor()).build()), Filterable{
             private var originalItems = emptyList<Level>()
@@ -80,8 +77,8 @@ class LevelPlayerAdapter2 (val context: Context,  val onItemClick: (Int) -> Unit
 
             override fun publishResults(constraint: CharSequence?, results: FilterResults?) {
                 filteredItems = results?.values as List<Level>
+                listener.onFilterApplied(filteredItems)
                 submitList(filteredItems)
-
             }
         }
     }
@@ -113,6 +110,10 @@ class LevelPlayerAdapter2 (val context: Context,  val onItemClick: (Int) -> Unit
     fun setOriginalItems() {
         submitList(originalItems)
         filteredItems = originalItems
+    }
+
+    interface FilterListener {
+        fun onFilterApplied(filteredList: List<Level>)
     }
 
 }

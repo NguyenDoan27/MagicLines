@@ -1,14 +1,11 @@
 package com.example.magiclines.fragments
 
-import android.graphics.LinearGradient
-import android.graphics.Shader
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import com.example.magiclines.databinding.FragmentHomeBinding
-import androidx.core.graphics.toColorInt
 import androidx.navigation.fragment.findNavController
 
 

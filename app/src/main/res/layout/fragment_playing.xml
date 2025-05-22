@@ -13,83 +13,92 @@
         android:elevation="2sp"/>
     <ImageView
         android:id="@+id/imgBack"
-        android:layout_width="32sp"
-        android:layout_height="32sp"
-        android:src="@drawable/back"
-        android:background="@drawable/circle_background"
+        android:layout_width="48sp"
+        android:layout_height="48sp"
+        android:src="@drawable/left_back"
         app:layout_constraintTop_toTopOf="@id/main"
         app:layout_constraintStart_toStartOf="@id/main"
         android:layout_marginTop="16sp"
         android:layout_marginStart="16sp"
         android:elevation="2sp"
+        android:scaleX="3"
+        android:scaleY="3"
         />
-    <TextView
-        android:id="@+id/tvName"
-        android:text="name"
-        android:textSize="40sp"
-        android:textStyle="bold"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textColor="@color/white"
-        app:layout_constraintBottom_toTopOf="@id/imgLoudspeaker"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:elevation="2sp"/>
-    <ImageView
-        android:id="@+id/imgLoudspeaker"
-        android:layout_width="32sp"
-        android:layout_height="32sp"
-        android:src="@drawable/loudspeaker"
-        android:elevation="2sp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBottom_toTopOf="@id/imgNextLevel"
-        android:layout_marginBottom="60sp"/>
+<!--    <TextView-->
+<!--        android:id="@+id/tvName"-->
+<!--        android:text="name"-->
+<!--        android:textSize="40sp"-->
+<!--        android:textStyle="bold"-->
+<!--        android:layout_width="wrap_content"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:textColor="@color/white"-->
+<!--        app:layout_constraintBottom_toTopOf="@id/imgLoudspeaker"-->
+<!--        app:layout_constraintStart_toStartOf="parent"-->
+<!--        app:layout_constraintEnd_toEndOf="parent"-->
+<!--        android:elevation="2sp"/>-->
+<!--    <ImageView-->
+<!--        android:id="@+id/imgLoudspeaker"-->
+<!--        android:layout_width="32sp"-->
+<!--        android:layout_height="32sp"-->
+<!--        android:src="@drawable/loudspeaker"-->
+<!--        android:elevation="2sp"-->
+<!--        app:layout_constraintStart_toStartOf="parent"-->
+<!--        app:layout_constraintEnd_toEndOf="parent"-->
+<!--        app:layout_constraintBottom_toTopOf="@id/imgNextLevel"-->
+<!--        android:layout_marginBottom="60sp"/>-->
     <ImageView
         android:id="@+id/imgEffect"
-        android:layout_width="32sp"
-        android:layout_height="32sp"
-        android:src="@drawable/stars"
-        android:background="@drawable/circle_background"
+        android:layout_width="48sp"
+        android:layout_height="48sp"
+        android:src="@drawable/more"
         app:layout_constraintTop_toTopOf="@id/main"
         app:layout_constraintEnd_toEndOf="@id/main"
         android:layout_marginTop="16sp"
         android:layout_marginEnd="16sp"
         android:elevation="2sp"
+        android:scaleX="3"
+        android:scaleY="3"
         />
     <ImageView
         android:id="@+id/imgDownLoad"
-        android:layout_width="32sp"
-        android:layout_height="32sp"
+        android:layout_width="48sp"
+        android:layout_height="48sp"
         android:src="@drawable/download"
-        android:background="@drawable/circle_background"
         app:layout_constraintEnd_toStartOf="@id/imgEffect"
         app:layout_constraintTop_toTopOf="@id/main"
-        android:layout_marginEnd="16sp"
+        android:layout_marginEnd="30sp"
         android:layout_marginTop="16sp"
         android:elevation="2sp"
+        android:scaleY="3"
+        android:scaleX="3"
         />
     <FrameLayout
         android:id="@+id/frPlaying"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@color/gray"/>
+        android:background="@color/gray"
+        android:clipChildren="false"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
     <ImageView
         android:id="@+id/imgRePlay"
-        android:layout_width="32sp"
-        android:layout_height="32sp"
-        android:src="@drawable/turn_around"
+        android:layout_width="48sp"
+        android:layout_height="48sp"
+        android:src="@drawable/replay"
         android:rotation="45"
-        android:background="@drawable/circle_background"
         app:layout_constraintBottom_toBottomOf="@id/main"
         app:layout_constraintStart_toStartOf="@id/main"
         app:layout_constraintEnd_toStartOf="@id/imgNextLevel"
         android:layout_marginBottom="48sp"
-        android:layout_marginStart="20sp"/>
+        android:layout_marginStart="20sp"
+        android:scaleX="3"
+        android:scaleY="3"/>
     <ImageView
         android:id="@+id/imgNextLevel"
         android:layout_width="100sp"
-        android:layout_height="32sp"
+        android:layout_height="48sp"
         android:src="@drawable/next"
         android:background="@drawable/circle_background"
         app:layout_constraintBottom_toBottomOf="@id/main"
@@ -99,14 +108,15 @@
         />
     <ImageView
         android:id="@+id/imgShare"
-        android:layout_width="32sp"
-        android:layout_height="32sp"
+        android:layout_width="48sp"
+        android:layout_height="48sp"
         android:src="@drawable/share"
-        android:background="@drawable/circle_background"
         app:layout_constraintEnd_toEndOf="@id/main"
         app:layout_constraintBottom_toBottomOf="@id/main"
         app:layout_constraintStart_toEndOf="@id/imgNextLevel"
         android:layout_marginBottom="48sp"
-        android:layout_marginEnd="20sp"/>
+        android:layout_marginEnd="20sp"
+        android:scaleX="3"
+        android:scaleY="3"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

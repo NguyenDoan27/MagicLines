@@ -34,11 +34,13 @@ class SettingDataStore(private val context: Context) {
     )
 
     private var levels = arrayListOf<Level>(
+        Level(1, R.string.orange_juice, R.drawable.test_600, false,"Object"),
         Level(2, R.string.orange_juice, R.drawable.frame_6, false,"Action"),
         Level(3, R.string.orange_juice, R.drawable.frame_7, false,"Symbol"),
         Level(4, R.string.orange_juice, R.drawable.frame_8, false,"Animal"),
         Level(5, R.string.orange_juice, R.drawable.frame_10, false,""),
         Level(6, R.string.orange_juice, R.drawable.vit_test, false,""),
+        Level(7, R.string.orange_juice, R.drawable.test_700, false,""),
     )
 
     suspend fun initData(){
@@ -141,6 +143,16 @@ class SettingDataStore(private val context: Context) {
     val language: Flow<String> = context.dataStore.data.map {
         preferences -> preferences[PreferenceKey.LANGUAGE] ?: "vi"
     }
+
+    val isFirst: Flow<Boolean> = context.dataStore.data.map {
+        preferences -> preferences[PreferenceKey.IS_FIRST] ?: true
+    }
+
+    suspend fun setIsFirst(isFirst: Boolean){
+        context.dataStore.edit { preferences ->
+            preferences[PreferenceKey.IS_FIRST] = isFirst
+        }
+    }
 }
 
 private object PreferenceKey {
@@ -152,4 +164,5 @@ private object PreferenceKey {
     val DATE_GET_ENERGY = longPreferencesKey("date_get_energy")
     val LANGUAGE = stringPreferencesKey("language")
     val SOUNDS = stringPreferencesKey("sounds")
+    val IS_FIRST = booleanPreferencesKey("is_first")
 }

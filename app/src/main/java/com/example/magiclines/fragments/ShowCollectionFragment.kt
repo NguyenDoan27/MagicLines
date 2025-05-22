@@ -2,29 +2,40 @@ package com.example.magiclines.fragments
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.app.Dialog
 import android.content.ContentValues
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.Canvas
+import android.graphics.Color
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.WindowManager.LayoutParams
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.core.graphics.createBitmap
+import androidx.core.graphics.drawable.toDrawable
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
+import com.example.magiclines.data.SettingDataStore
+import com.example.magiclines.databinding.DeleteArtDialogBinding
 import com.example.magiclines.databinding.FragmentShowCollectionBinding
+import com.example.magiclines.databinding.SelectLanguageDialogBinding
 import com.example.magiclines.models.Level
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 import java.io.File
 import java.io.FileOutputStream
 import java.text.SimpleDateFormat
@@ -37,11 +48,17 @@ class ShowCollectionFragment : Fragment() {
     private lateinit var binding: FragmentShowCollectionBinding
     private var level: Level? = null
     private val args: ShowCollectionFragmentArgs by navArgs()
+    private val dataStore: SettingDataStore by lazy { SettingDataStore(requireContext()) }
+    private var levels: List<Level> = listOf()
+    private var dialog: Dialog? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         level = args.level
+        lifecycleScope.launch {
+            levels = dataStore.levelsFlow.first()
+        }
     }
 
     override fun onCreateView(
@@ -59,6 +76,44 @@ class ShowCollectionFragment : Fragment() {
         binding.btnShare.setOnClickListener { handleShare() }
         binding.btnDownload.setOnClickListener { handleDownload() }
         binding.ivBack.setOnClickListener { findNavController().popBackStack() }
+        binding.ivDelete.setOnClickListener { handleDelete() }
+    }
+
+    private fun handleDelete() { showDeleteDialog() }
+
+    private fun showDeleteDialog() {
+        if (isDetached || !isAdded) return
+        try {
+            dialog?.dismiss()
+            val dialogBinding = DeleteArtDialogBinding.inflate(layoutInflater)
+
+            dialog = Dialog(requireContext()).apply {
+                setContentView(dialogBinding.root)
+                window?.apply {
+                    setLayout(550, LayoutParams.WRAP_CONTENT)
+                    setBackgroundDrawable(Color.TRANSPARENT.toDrawable())
+                }
+
+                dialogBinding.btnKeep.setOnClickListener {
+                    dialog?.dismiss()
+                }
+                dialogBinding.btnDelete.setOnClickListener {
+                    for (i in levels){
+                        if (i.numLevel == level!!.numLevel){
+                            i.isComplete = false
+                        }
+                    }
+                    lifecycleScope.launch {
+                        dataStore.saveLevel(levels)
+                    }
+                    dialog!!.dismiss()
+                    findNavController().popBackStack()
+                }
+                show()
+            }
+        }catch (_: Exception){
+            Log.e("SettingActivity", "Error showing language dialog", )
+        }
     }
 
     private fun handleDownload() {

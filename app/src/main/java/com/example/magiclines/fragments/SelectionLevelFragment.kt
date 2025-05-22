@@ -36,7 +36,7 @@ import java.util.Date
 import java.util.concurrent.TimeUnit
 
 
-class SelectionLevelFragment : Fragment() {
+class SelectionLevelFragment : Fragment(), LevelPlayerAdapter2.FilterListener {
 
     private lateinit var binding: FragmentSelectionLevelBinding
     private lateinit var dataStore: SettingDataStore
@@ -92,7 +92,7 @@ class SelectionLevelFragment : Fragment() {
 
     private fun setupAdapters() {
 
-        levelAdapter = LevelPlayerAdapter2(requireContext()){position ->
+        levelAdapter = LevelPlayerAdapter2(requireContext(), this){position ->
             handleLevelClick(position)
         }
 
@@ -234,6 +234,10 @@ class SelectionLevelFragment : Fragment() {
             layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
             adapter = categoryAdapter
         }
+    }
+
+    override fun onFilterApplied(filteredList: List<Level>) {
+
     }
 
 

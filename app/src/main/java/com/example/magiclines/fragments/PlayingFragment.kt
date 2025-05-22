@@ -1,6 +1,8 @@
 package com.example.magiclines.fragments
 
 import android.Manifest
+import android.animation.ObjectAnimator
+import android.animation.ValueAnimator
 import android.annotation.SuppressLint
 import android.app.Dialog
 import android.content.ContentValues
@@ -8,6 +10,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.Canvas
+import android.graphics.Path
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
@@ -18,11 +21,15 @@ import android.os.Looper
 import android.provider.MediaStore
 import android.speech.tts.TextToSpeech
 import android.util.Log
+import android.view.Gravity
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager.LayoutParams
+import android.view.animation.LinearInterpolator
+import android.widget.FrameLayout
+import android.widget.ImageView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.ActionBar
@@ -43,6 +50,7 @@ import com.example.magiclines.databinding.AddEnergyDialogBinding
 import com.example.magiclines.databinding.EffectBottomDialogBinding
 import com.example.magiclines.databinding.ExitGraftDialogBinding
 import com.example.magiclines.databinding.FragmentPlayingBinding
+import com.example.magiclines.fragments.SettingFragment.Quad
 import com.example.magiclines.models.Audio
 import com.example.magiclines.models.Color
 import com.example.magiclines.models.Level
@@ -50,6 +58,7 @@ import com.example.magiclines.services.SoundService
 import com.example.magiclines.views.PlayingView
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import nl.dionsegijn.konfetti.core.Party
@@ -96,9 +105,10 @@ class PlayingFragment : Fragment(), PlayingView.OnProcessingCompleteListener {
     private var isComplete = false
     private var exitDialogBinding : ExitGraftDialogBinding? = null
     private var exitDialog: Dialog? = null
+    private var isFirst: Boolean? = null
 
     private val backgrounds = listOf(
-        Color("Green", "#29724E"),
+        Color("Green", "#000000"),
         Color("Peach cream", "#2C2972"),
         Color("Olive", "#677229"),
         Color("Maroon", "#72294C"),
@@ -122,9 +132,56 @@ class PlayingFragment : Fragment(), PlayingView.OnProcessingCompleteListener {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         initData()
+        handleFirstPlaying()
         setupListeners()
         observeDataStore()
         handleTextToSpeech()
+    }
+
+    private fun handleFirstPlaying() {
+        if (isFirst!!) {
+            showTutorial()
+        }
+    }
+
+    private fun showTutorial() {
+        val overlay = LayoutInflater.from(requireContext()).inflate(R.layout.tutorial_overlay, null).apply {
+            layoutParams = ViewGroup.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT
+            )
+        }
+        val handGUI = overlay.findViewById<ImageView>(R.id.hand_guide)
+        binding.main.addView(overlay)
+
+        overlay.setOnClickListener {
+            binding.main.removeView(overlay)
+
+            lifecycleScope.launch {
+                dataStore.setIsFirst(false)
+            }
+
+        }
+        moveHand(handGUI)
+    }
+
+    private fun moveHand(view: ImageView) {
+
+        view.post {
+            val centerX = binding.main.width / 2f
+            val centerY = binding.main.height / 2f
+
+            val circlePath = Path().apply {
+                addCircle(centerX, centerY, 200f, Path.Direction.CW)
+            }
+
+            val animator = ObjectAnimator.ofFloat(view, View.X, View.Y, circlePath).apply {
+                duration = 2000
+                repeatCount = ValueAnimator.INFINITE
+                interpolator = LinearInterpolator()
+            }
+            animator.start()
+        }
     }
 
     override fun onComplete() {
@@ -134,8 +191,16 @@ class PlayingFragment : Fragment(), PlayingView.OnProcessingCompleteListener {
     private fun initData() {
         dataStore = SettingDataStore(requireContext())
         lifecycleScope.launch {
-            originLevels = dataStore.levelsFlow.first()
+            combine(
+                dataStore.levelsFlow,
+                dataStore.isFirst
+            ) { levels, isFirst -> Pair(levels, isFirst) }
+                .collect { (levels, isF) ->
+                    originLevels = levels
+                    isFirst = isF
+                }
         }
+
 
         levels = args.levels.toList()
         position = args.position
@@ -149,10 +214,17 @@ class PlayingFragment : Fragment(), PlayingView.OnProcessingCompleteListener {
 
     private fun setupCustomView() {
         customView = PlayingView(requireContext(), levels[position]).apply {
+            layoutParams = FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.MATCH_PARENT,
+                FrameLayout.LayoutParams.MATCH_PARENT
+            ).apply {
+                gravity = Gravity.CENTER  // <-- Sửa tại đây
+            }
             setOnProcessingCompleteListener(this@PlayingFragment)
-            binding.frPlaying.addView(this)
             setToolbarVisibility(false)
         }
+
+        binding.frPlaying.addView(customView)
     }
 
     private fun setupListeners() {
@@ -240,12 +312,12 @@ class PlayingFragment : Fragment(), PlayingView.OnProcessingCompleteListener {
 
             binding.frPlaying.setGradientBackground(colorInt)
             listOf(
-                binding.imgEffect,
-                binding.imgRePlay,
+//                binding.imgEffect,
+//                binding.imgRePlay,
                 binding.imgNextLevel,
-                binding.imgBack,
-                binding.imgDownLoad,
-                binding.imgShare
+//                binding.imgBack,
+//                binding.imgDownLoad,
+//                binding.imgShare
             ).forEach { view ->
                 view.setGradientBackground(colorInt, 2, strokeColor, 50f)
             }
@@ -430,7 +502,7 @@ class PlayingFragment : Fragment(), PlayingView.OnProcessingCompleteListener {
 
             binding.konfettiView.start(party)
         }
-        binding.tvName.text = getString(levels[position].resourceName)
+//        binding.tvName.text = getString(levels[position].resourceName)
         handle.postDelayed(action, 1000)
         setToolbarVisibility(true)
         isComplete = true
@@ -442,8 +514,8 @@ class PlayingFragment : Fragment(), PlayingView.OnProcessingCompleteListener {
             imgShare.visibility = visible.toVisibility()
             imgNextLevel.visibility = visible.toVisibility()
             imgDownLoad.visibility = visible.toVisibility()
-            imgLoudspeaker.visibility = visible.toVisibility()
-            tvName.visibility = visible.toVisibility()
+//            imgLoudspeaker.visibility = visible.toVisibility()
+//            tvName.visibility = visible.toVisibility()
         }
     }
 
@@ -468,9 +540,9 @@ class PlayingFragment : Fragment(), PlayingView.OnProcessingCompleteListener {
             }
         })
 
-        binding.imgLoudspeaker.setOnClickListener {
-            tts!!.speak(binding.tvName.text.toString(), TextToSpeech.QUEUE_FLUSH, null, "")
-        }
+//        binding.imgLoudspeaker.setOnClickListener {
+//            tts!!.speak(binding.tvName.text.toString(), TextToSpeech.QUEUE_FLUSH, null, "")
+//        }
     }
     private fun showExitDialog() {
         if (!isAdded || isDetached) return
