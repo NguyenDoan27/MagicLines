@@ -9,17 +9,17 @@
     android:background="@drawable/background_app1">
 
     <ImageView
-        android:id="@+id/imgSetting"
-        android:layout_width="48sp"
-        android:layout_height="48sp"
+        android:id="@+id/imgback"
+        android:layout_width="40sp"
+        android:layout_height="40sp"
         android:contentDescription="@string/settings_icon"
         android:src="@drawable/left_back"
         app:layout_constraintTop_toTopOf="@+id/main"
         app:layout_constraintStart_toStartOf="@id/main"
         app:layout_constraintBottom_toTopOf="@id/rcv_category"
         android:layout_margin="18sp"
-        android:scaleX="3"
-        android:scaleY="3"/>
+       />
+
 
 <!--    <TextView-->
 <!--        android:id="@+id/tvPower"-->
@@ -58,8 +58,7 @@
         android:id="@+id/rcv_category"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:layout_constraintTop_toBottomOf="@id/imgSetting"
-        android:background="@drawable/category_recyclerview_background"
+        app:layout_constraintTop_toBottomOf="@id/imgback"
         android:layout_marginTop="16sp"
         android:layout_marginHorizontal="8sp"
         />

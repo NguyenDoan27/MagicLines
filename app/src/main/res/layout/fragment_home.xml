@@ -8,48 +8,59 @@
     tools:context=".ui.home.HomeFragment">
     <ImageView
         android:id="@+id/imgSetting"
-        android:layout_width="48sp"
-        android:layout_height="48sp"
+        android:layout_width="38sp"
+        android:layout_height="38sp"
         android:src="@drawable/setting"
-        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/layout1"
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_margin="17sp"
-        android:scaleY="3"
-        android:scaleX="3"
         />
-    <ImageView
-        android:id="@+id/logo"
-        android:layout_width="339sp"
-        android:layout_height="66sp"
-        android:src="@drawable/logo1"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/imgSetting"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="20sp"
-    />
-    <ImageView
-        android:id="@+id/layoutGraft"
-        android:layout_width="match_parent"
-        android:layout_height="240sp"
-        app:cardElevation="10dp"
-        android:src="@drawable/graft"
-        app:layout_constraintTop_toBottomOf="@id/logo"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        android:layout_marginTop="20sp"
-        android:gravity="center"/>
-    <ImageView
-        android:id="@+id/layout_gallery"
-        android:layout_width="match_parent"
-        android:layout_height="240sp"
-        app:cardElevation="10dp"
-        android:src="@drawable/gallery"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/layoutGraft"
-        android:layout_marginTop="20sp"
+    <LinearLayout
+        android:id="@+id/layout1"
+        android:layout_width="0sp"
+        android:layout_height="0sp"
+        app:layout_constraintDimensionRatio="357:533"
         app:layout_constraintBottom_toBottomOf="parent"
-        android:layout_marginBottom="30sp"
-        android:gravity="center"/>
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:orientation="vertical"
+        android:gravity="center">
+
+        <ImageView
+            android:id="@+id/logo"
+            android:layout_width="339sp"
+            android:layout_height="66sp"
+            android:src="@drawable/logo1"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/imgSetting"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="20sp"
+            />
+        <ImageView
+            android:id="@+id/layoutGraft"
+            android:layout_width="match_parent"
+            android:layout_height="240sp"
+            app:cardElevation="10dp"
+            android:src="@drawable/graft"
+            app:layout_constraintTop_toBottomOf="@id/logo"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            android:layout_marginTop="20sp"
+            android:gravity="center"/>
+        <ImageView
+            android:id="@+id/layout_gallery"
+            android:layout_width="match_parent"
+            android:layout_height="240sp"
+            app:cardElevation="10dp"
+            android:src="@drawable/gallery"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/layoutGraft"
+            android:layout_marginTop="20sp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:layout_marginBottom="30sp"
+            android:gravity="center"/>
+    </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

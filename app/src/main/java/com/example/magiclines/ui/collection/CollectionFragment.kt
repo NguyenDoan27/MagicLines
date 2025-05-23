@@ -5,28 +5,28 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.magiclines.R
 import com.example.magiclines.common.adapter.CategoryAdapter
 import com.example.magiclines.common.adapter.LevelPlayerAdapter2
 import com.example.magiclines.base.BaseFragment
 import com.example.magiclines.data.SettingDataStore
 import com.example.magiclines.databinding.FragmentCollectionBinding
 import com.example.magiclines.models.Level
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.launch
+import kotlin.random.Random
 
 class CollectionFragment : BaseFragment<FragmentCollectionBinding, CollectionViewModel>(),
     LevelPlayerAdapter2.FilterListener {
 
-    private var categoryAdapter: CategoryAdapter? = null
-    private val category = listOf("All", "Anime", "Animal", "Kawaii")
+    private lateinit var categoryAdapter: CategoryAdapter
+    private var category = emptyList<String>()
     private var dataStore: SettingDataStore? = null
-    private var levels = mutableListOf<Level>()
-    private var currentCategory = 0
-    private var levelAdapter: LevelPlayerAdapter2? = null
+    private lateinit var levelAdapter: LevelPlayerAdapter2
+    private val viewModel: CollectionViewModel by lazy { CollectionViewModel(SettingDataStore(requireContext())) }
+    private var position = 0
+    private var isDataLoaded = false
 
     override val bindingInflater: (LayoutInflater, ViewGroup?, Boolean) -> FragmentCollectionBinding
         get() = FragmentCollectionBinding::inflate
@@ -42,55 +42,75 @@ class CollectionFragment : BaseFragment<FragmentCollectionBinding, CollectionVie
         binding.rcvLevelPlayer.apply {
             layoutManager = GridLayoutManager(requireContext(), 2)
             adapter = levelAdapter
-            levelAdapter!!.setItems(levels)
         }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        categoryAdapter = CategoryAdapter(requireContext(), currentCategory, category) { category, position ->
-            categoryAdapter!!.setCurrentCategory(position)
+        category = resources.getStringArray(R.array.category_name).toList()
+
+        categoryAdapter = CategoryAdapter(requireContext(), viewModel.currentCategory.value ?: 0, category) { category, position ->
+            categoryAdapter.setCurrentCategory(position)
+            viewModel.setCurrentCategory(position)
+
+            this.position = position
             if (position == 0) {
-                levelAdapter!!.setOriginalItems()
-                levelAdapter!!.filter?.filter("")
+                viewModel.getDataFiltered(levelAdapter,position,"")
             } else {
-                levelAdapter!!.filter?.filter(category)
+                viewModel.getDataFiltered(levelAdapter,position,category)
             }
+            updateUI()
         }
 
         levelAdapter = LevelPlayerAdapter2(requireContext(), this) { position ->
-            val action = CollectionFragmentDirections.actionCollectionFragmentToShowCollectionFragment(
-                levelAdapter!!.getItemsFiltered()[position])
+            val action = CollectionFragmentDirections.actionCollectionFragmentToShowCollectionFragment(viewModel.filteredLevels.value!![position])
             findNavController().navigate(action)
         }
 
         dataStore = SettingDataStore(requireContext())
     }
 
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        if (!isDataLoaded) {
+            viewModel.getDataFiltered(levelAdapter, position, "")
+            isDataLoaded = true
+        }
+
+        viewModel.filteredLevels.observe(viewLifecycleOwner) { filteredLevels ->
+            Log.e("TAG", "onViewCreated: ${filteredLevels.size}", )
+            levelAdapter.submitList(filteredLevels)
+            if (filteredLevels.isEmpty()){
+                binding.llNoCollection.visibility = View.VISIBLE
+                binding.rcvLevelPlayer.visibility = View.GONE
+            }else{
+                binding.llNoCollection.visibility = View.GONE
+                binding.rcvLevelPlayer.visibility = View.VISIBLE
+            }
+        }
+
+        viewModel.currentCategory.observe(viewLifecycleOwner) { categoryIndex ->
+            categoryAdapter.setCurrentCategory(categoryIndex)
+        }
+
+    }
+
     override fun onResume() {
         super.onResume()
-        lifecycleScope.launch {
-            levels.clear()
-            val data = dataStore!!.levelsFlow.first()
-            for (i in data) {
-                if (i.isComplete) levels.add(i)
-            }
-            levelAdapter?.setItems(levels)
-            updateNoCollectionVisibility()
-        }
-        categoryAdapter?.setCurrentCategory(currentCategory)
+        isDataLoaded = false
+        viewModel.getDataFiltered(levelAdapter, position, if (position == 0) "" else category[position])
+        updateUI()
     }
 
     override fun onFilterApplied(filteredList: List<Level>) {
-        updateNoCollectionVisibility()
+        viewModel.setFilteredLevels(filteredList)
     }
 
-    private fun updateNoCollectionVisibility() {
-        if (levelAdapter!!.getItemsFiltered().isEmpty()) {
-            binding.llNoCollection.visibility = View.VISIBLE
-        } else {
-            binding.llNoCollection.visibility = View.GONE
-        }
+    private fun updateUI() {
+        val isEmpty = levelAdapter.getItemsFiltered().isEmpty()
+        binding.llNoCollection.visibility = if (isEmpty) View.VISIBLE else View.GONE
+        binding.rcvLevelPlayer.visibility = if (isEmpty) View.GONE else View.VISIBLE
     }
 }

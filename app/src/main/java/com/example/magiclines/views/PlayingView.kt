@@ -59,6 +59,8 @@ class PlayingView @JvmOverloads constructor(
     private var star = 0
     private var level: Level? = null
 
+    private var touchListener: OnTouchListener? = null
+
     data class PathInfo(
         val originalPath: Path,
         val originalPathX: Float,
@@ -155,7 +157,7 @@ class PlayingView @JvmOverloads constructor(
                             isAntiAlias = true
                             style = if (strokeColor != null) Paint.Style.STROKE else Paint.Style.FILL
                             this.strokeWidth = if (strokeColor != null) strokeWidth + 10f else 0f
-                            setMaskFilter(BlurMaskFilter(36f, BlurMaskFilter.Blur.NORMAL))
+                            setMaskFilter(BlurMaskFilter(20f, BlurMaskFilter.Blur.NORMAL))
                             alpha = 250
                         }
                     } else {
@@ -220,11 +222,14 @@ class PlayingView @JvmOverloads constructor(
     override fun onTouchEvent(event: MotionEvent?): Boolean {
         event?.let {
             if (!isTouchEnabled) return false
+            touchListener?.onTouch(this, event)
             when (it.action) {
                 MotionEvent.ACTION_DOWN -> {
                     touchX = it.x
                     touchY = it.y
-                    return true
+                    // Prevent parent from intercepting
+                    parent.requestDisallowInterceptTouchEvent(true)
+                    return true // Consume event to continue receiving MOVE/UP
                 }
                 MotionEvent.ACTION_MOVE -> {
                     val newX = it.x
@@ -238,10 +243,12 @@ class PlayingView @JvmOverloads constructor(
                         invalidate()
                         checkAndSnapIfAligned()
                     }
+                    parent.requestDisallowInterceptTouchEvent(true)
                     return true
                 }
                 MotionEvent.ACTION_UP -> {
                     checkAndSnapIfAligned()
+                    parent.requestDisallowInterceptTouchEvent(true)
                     return true
                 }
             }
@@ -249,7 +256,7 @@ class PlayingView @JvmOverloads constructor(
         return super.onTouchEvent(event)
     }
 
-    private fun movePath(path: PathInfo, x: Float, y: Float) {
+     fun movePath(path: PathInfo, x: Float, y: Float) {
         val dx = (x - touchX) * path.directionX
         val dy = (y - touchY) * path.directionY
 
@@ -301,7 +308,7 @@ class PlayingView @JvmOverloads constructor(
         }
     }
 
-    private fun checkAndSnapIfAligned() {
+     fun checkAndSnapIfAligned() {
         val threshold = 5f
         val allAligned = paths.all { path ->
             val targetOffsetX = path.centerX + path.initialX

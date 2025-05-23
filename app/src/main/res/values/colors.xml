@@ -8,4 +8,14 @@
     <color name="dark_blue">#2663A8</color>
     <color name="ocean_blue">#0077b6</color>
     <color name="sunset_orange">#ff6b35</color>
+    <color name="green">#8FFF00</color>
+    <color name="green_light">#50E577</color>
+    <color name="green_dark">#599F00</color>
+    <color name="green_blur_50">#5050E577</color>
+    <color name="green_blur_30">#3050E577</color>
+    <color name="green_blur_20">#2050E577</color>
+    <color name="green_blur_10">#1050E577</color>
+    <color name="green_blur_00">#0050E577</color>
+    <color name="green_white">#79f1b4</color>
+    <color name="green_medium_dark">#3baa58</color>
 </resources>

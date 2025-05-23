@@ -4,6 +4,7 @@ import android.content.Context
 import android.os.Build
 import android.os.Bundle
 import android.os.LocaleList
+import android.util.Log
 import android.view.LayoutInflater
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
@@ -16,6 +17,7 @@ import com.example.magiclines.base.BaseActivity
 import com.example.magiclines.data.SettingDataStore
 import com.example.magiclines.data.SoundManager
 import com.example.magiclines.databinding.ActivityMainBinding
+import com.example.magiclines.ui.setting.SettingViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -31,8 +33,8 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>() {
         CoroutineScope(SupervisorJob() + Dispatchers.Main) // Sử dụng Dispatchers.Main
     private lateinit var soundManager: SoundManager
 
-    private val dataStore by lazy { SettingDataStore(applicationContext) }
     private var currentLanguage: String? = null
+    private val viewModel: MainViewModel by lazy { MainViewModel(SettingDataStore(context = applicationContext)) }
 
     override val bindingInflater: (LayoutInflater) -> ActivityMainBinding
         get() = ActivityMainBinding::inflate
@@ -45,47 +47,28 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>() {
         super.onCreate(savedInstanceState)
 
         val dataStore = SettingDataStore(applicationContext)
-        scope.launch {
-
-            dataStore.readStateSound()
-                .flowOn(Dispatchers.IO)
-                .collect { isSound ->
-                    soundManager = SoundManager(applicationContext, isSound)
-                    ProcessLifecycleOwner.Companion.get().lifecycle.addObserver(soundManager)
-                }
+        currentLanguage = resources.configuration.locale.language
+        viewModel.language.observe(this){ language ->
+            if (currentLanguage != language){
+                updateLocale(language)
+                currentLanguage = language
+            }
         }
 
-        lifecycleScope.launch {
-            val initialLanguage = dataStore.language.first()
-            updateLocale(initialLanguage)
+        viewModel.isSound.observe(this) { isSound ->
+            soundManager = SoundManager(applicationContext, isSound)
+            ProcessLifecycleOwner.get().lifecycle.addObserver(soundManager)
         }
+
     }
 
 
     override fun onStart() {
         super.onStart()
-        observeLanguageChanges()
+        viewModel.getData()
     }
 
 
-    private fun observeLanguageChanges() {
-        lifecycleScope.launch {
-            dataStore.language
-                .distinctUntilChanged()
-                .collect { newLanguage ->
-                    if (newLanguage != currentLanguage) {
-                        currentLanguage = newLanguage
-                        updateLocale(newLanguage)
-
-                        onLanguageChanged(newLanguage)
-                    }
-                }
-        }
-    }
-
-    protected open fun onLanguageChanged(newLanguage: String) {
-
-    }
 
     private fun updateLocale(languageCode: String) {
         val config = resources.configuration
@@ -115,14 +98,7 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>() {
         }
     }
 
-    override fun attachBaseContext(newBase: Context) {
-        super.attachBaseContext(newBase)
 
-        lifecycleScope.launch {
-            val language = dataStore.language.first()
-            updateLocale(language)
-        }
-    }
 
     override fun onDestroy() {
         super.onDestroy()

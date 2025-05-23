@@ -22,6 +22,7 @@ import android.provider.MediaStore
 import android.speech.tts.TextToSpeech
 import android.util.Log
 import android.view.LayoutInflater
+import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
@@ -62,6 +63,7 @@ import java.io.FileOutputStream
 import java.text.SimpleDateFormat
 import java.util.Locale
 import java.util.concurrent.TimeUnit
+import kotlin.math.abs
 
 class PlayingFragment : BaseFragment<FragmentPlayingBinding, PlayingViewModel>(), PlayingView.OnProcessingCompleteListener {
 
@@ -83,7 +85,6 @@ class PlayingFragment : BaseFragment<FragmentPlayingBinding, PlayingViewModel>()
     private var currentColorPosition = 0
     private var currentMusicPosition = 0
     private var isPlaying = true
-    private lateinit var dataStore: SettingDataStore
     private var position = -1
     private var levels: List<Level> = emptyList()
     private var musics: List<Audio> = emptyList()
@@ -95,7 +96,10 @@ class PlayingFragment : BaseFragment<FragmentPlayingBinding, PlayingViewModel>()
     private var isComplete = false
     private var exitDialogBinding : ExitGraftDialogBinding? = null
     private var exitDialog: Dialog? = null
-    private var isFirst: Boolean? = null
+    private val viewModel: PlayingViewModel by lazy { PlayingViewModel(SettingDataStore(requireContext())) }
+
+    private var scaleFactor = 1f
+    private val matrix = android.graphics.Matrix()
 
     private val backgrounds = listOf(
         Color("Green", "#000000"),
@@ -110,6 +114,7 @@ class PlayingFragment : BaseFragment<FragmentPlayingBinding, PlayingViewModel>()
     override val bindingInflater: (LayoutInflater, ViewGroup?, Boolean) -> FragmentPlayingBinding
         get() = FragmentPlayingBinding::inflate
 
+    @SuppressLint("ClickableViewAccessibility")
     override fun initViewBinding() {
         binding.apply {
             imgEffect.setOnClickListener { showEffectDialog() }
@@ -121,7 +126,20 @@ class PlayingFragment : BaseFragment<FragmentPlayingBinding, PlayingViewModel>()
             imgRePlay.setOnClickListener { handleReplay() }
             imgNextLevel.setOnClickListener { loadNextLevel() }
             imgDownLoad.setOnClickListener { handleDownload() }
-            imgShare.setOnClickListener { shareCurrentLevel() }
+            imgMute.setOnClickListener {
+                viewModel.setIsPlaying(!isPlaying)
+                isPlaying  =  !isPlaying
+            }
+//            imgShare.setOnClickListener { shareCurrentLevel() }
+
+//            binding.imgDownLoad.scaleType = ImageView.ScaleType.MATRIX
+//            matrix.set(binding.imgDownLoad.imageMatrix)
+//            binding.imgDownLoad.imageMatrix = matrix
+//            scaleFactor *= 3f
+//            val centerX = binding.imgDownLoad.width / 2f
+//            val centerY = binding.imgDownLoad.height / 2f
+//            matrix.postScale(scaleFactor, scaleFactor, centerX, centerY)
+//            binding.imgDownLoad.imageMatrix = matrix
         }
     }
 
@@ -133,16 +151,46 @@ class PlayingFragment : BaseFragment<FragmentPlayingBinding, PlayingViewModel>()
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         initData()
-        handleFirstPlaying()
-        observeDataStore()
-        handleTextToSpeech()
+//        handleTextToSpeech()
+
+        viewModel.getInitData()
+        viewModel.getMusics()
+
+        viewModel.firstTimes.observe(viewLifecycleOwner) { first ->
+            if (first) showTutorial()
+        }
+
+        viewModel.bgPos.observe(viewLifecycleOwner) { bgPos ->
+            currentColorPosition = bgPos
+            updateBackgroundColor(backgrounds.getOrNull(bgPos)?.codeColor)
+        }
+
+        viewModel.musicPos.observe(viewLifecycleOwner){ musicPos ->
+            currentMusicPosition = musicPos
+        }
+
+        viewModel.isPlaying.observe(viewLifecycleOwner) { isPlaying ->
+            this.isPlaying = isPlaying
+            if (isPlaying){
+                binding.imgMute.setImageResource(R.drawable.mute_on)
+            }else{
+                binding.imgMute.setImageResource(R.drawable.mute_off)
+            }
+            with(Intent(requireContext(), SoundService::class.java)) {
+                if (isPlaying) requireContext().startService(this) else requireContext().stopService(this)
+            }
+        }
+
+        viewModel.music.observe(viewLifecycleOwner) { musics ->
+            this.musics = musics
+        }
+
+        viewModel.levels.observe (viewLifecycleOwner){ levels ->
+            this.originLevels = levels
+        }
+
     }
 
-    private fun handleFirstPlaying() {
-        if (isFirst!!) {
-            showTutorial()
-        }
-    }
 
     private fun showTutorial() {
         val overlay = LayoutInflater.from(requireContext()).inflate(R.layout.tutorial_overlay, null).apply {
@@ -156,11 +204,7 @@ class PlayingFragment : BaseFragment<FragmentPlayingBinding, PlayingViewModel>()
 
         overlay.setOnClickListener {
             binding.main.removeView(overlay)
-
-            lifecycleScope.launch {
-                dataStore.setIsFirst(false)
-            }
-
+            viewModel.setIsFirst(false)
         }
         moveHand(handGUI)
     }
@@ -185,22 +229,10 @@ class PlayingFragment : BaseFragment<FragmentPlayingBinding, PlayingViewModel>()
     }
 
     override fun onComplete(star: Int) {
-        handleLevelCompletion(star)
+        handleLevelCompletion(originLevels, levels, position, star)
     }
 
     private fun initData() {
-        dataStore = SettingDataStore(requireContext())
-        lifecycleScope.launch {
-            combine(
-                dataStore.levelsFlow,
-                dataStore.isFirst
-            ) { levels, isFirst -> Pair(levels, isFirst) }
-                .collect { (levels, isF) ->
-                    originLevels = levels
-                    isFirst = isF
-                }
-        }
-
 
         levels = args.levels.toList()
         position = args.position
@@ -218,26 +250,6 @@ class PlayingFragment : BaseFragment<FragmentPlayingBinding, PlayingViewModel>()
         setToolbarVisibility(false)
     }
 
-
-    private fun observeDataStore() {
-        lifecycleScope.launch {
-            combine(
-                dataStore.readMusicPosition(),
-                dataStore.readBackgroundPosition(),
-                dataStore.readStateSound()
-            ) { musicPos, bgPos, soundState -> Triple(musicPos, bgPos, soundState) }
-                .collect { (musicPos, bgPos, soundState) ->
-                    currentMusicPosition = musicPos
-                    currentColorPosition = bgPos
-                    isPlaying = soundState
-                    updateBackgroundColor(backgrounds.getOrNull(bgPos)?.codeColor)
-                }
-        }
-
-        lifecycleScope.launch {
-            musics = dataStore.musics.first()
-        }
-    }
 
     private fun handleReplay() {
         binding.frPlaying.scramblePaths()
@@ -282,16 +294,6 @@ class PlayingFragment : BaseFragment<FragmentPlayingBinding, PlayingViewModel>()
 
             binding.main.setGradientBackground(colorInt)
             binding.frPlaying.setGradientBackground(colorInt)
-//            listOf(
-//                binding.imgEffect,
-//                binding.imgRePlay,
-//                binding.imgNextLevel,
-//                binding.imgBack,
-//                binding.imgDownLoad,
-//                binding.imgShare
-//            ).forEach { view ->
-//                view.setGradientBackground(colorInt, 2, strokeColor, 50f)
-//            }
         }
     }
 
@@ -306,7 +308,7 @@ class PlayingFragment : BaseFragment<FragmentPlayingBinding, PlayingViewModel>()
                 setContentView(dialogBinding?.root ?: return@apply)
                 setupMusicAdapter()
                 setupBackgroundAdapter()
-                setupSoundSwitch()
+//                setupSoundSwitch()
                 setOnDismissListener { dialogBinding = null }
                 show()
             }
@@ -320,15 +322,14 @@ class PlayingFragment : BaseFragment<FragmentPlayingBinding, PlayingViewModel>()
             requireContext(),
             currentMusicPosition
         ) { position ->
-            lifecycleScope.launch {
-                dataStore.saveMusicPosition(position)
-                with(Intent(requireContext(), SoundService::class.java)) {
-                    if (isPlaying) {
-                        requireContext().stopService(this)
-                        requireContext().startService(this)
-                    }
+            viewModel.setMusicPosition(position)
+            with(Intent(requireContext(), SoundService::class.java)) {
+                if (isPlaying) {
+                    requireContext().stopService(this)
+                    requireContext().startService(this)
                 }
             }
+
         }
         dialogBinding?.rcvMusicList?.apply {
             layoutManager =
@@ -341,10 +342,7 @@ class PlayingFragment : BaseFragment<FragmentPlayingBinding, PlayingViewModel>()
     private fun setupBackgroundAdapter() {
         backgroundAdapter = BackgroundAdapter2(requireContext(), currentColorPosition) { position ->
             currentColorPosition = position
-            updateBackgroundColor(backgrounds[position].codeColor)
-            lifecycleScope.launch {
-                dataStore.saveBackgroundPosition(position)
-            }
+            viewModel.setBackgroundPosition(position)
         }
         dialogBinding?.rcvBackgroundList?.apply {
             layoutManager =
@@ -355,17 +353,12 @@ class PlayingFragment : BaseFragment<FragmentPlayingBinding, PlayingViewModel>()
     }
 
     private fun setupSoundSwitch() {
-        dialogBinding?.swMusic?.apply {
-            isChecked = isPlaying
-            setOnCheckedChangeListener { _, isChecked ->
-                lifecycleScope.launch {
-                    dataStore.saveStateSound(isChecked)
-                    with(Intent(requireContext(), SoundService::class.java)) {
-                        if (isChecked) requireContext().startService(this) else requireContext().stopService(this)
-                    }
-                }
-            }
-        }
+//        dialogBinding?.swMusic?.apply {
+//            isChecked = isPlaying
+//            setOnCheckedChangeListener { _, isChecked ->
+//                viewModel.setIsPlaying(isChecked)
+//            }
+//        }
     }
 
     private fun allPermissionsGranted() = REQUIRED_PERMISSIONS.all {
@@ -450,19 +443,8 @@ class PlayingFragment : BaseFragment<FragmentPlayingBinding, PlayingViewModel>()
         ).let { startActivity(it) }
     }
 
-    private fun handleLevelCompletion(star: Int) {
-        lifecycleScope.launch {
-            dataStore.apply {
-                for (i in originLevels){
-                    if (i.resourceId == levels[position].resourceId){
-                        i.isComplete = true
-                        i.setStar(star)
-                        break
-                    }
-                }
-                saveLevel(originLevels)
-            }
-        }
+    private fun handleLevelCompletion(originLevels: List<Level>, playingLevels: List<Level>,pos: Int, star: Int) {
+        viewModel.setLevels(originLevels, playingLevels, pos, star)
         val handle = Handler(Looper.getMainLooper())
         val action = Runnable{
             val party = Party(
@@ -485,10 +467,10 @@ class PlayingFragment : BaseFragment<FragmentPlayingBinding, PlayingViewModel>()
 
     private fun setToolbarVisibility(visible: Boolean) {
         binding.apply {
-            imgRePlay.visibility = visible.toVisibility()
-            imgShare.visibility = visible.toVisibility()
-            imgNextLevel.visibility = visible.toVisibility()
+            layoutNext.visibility = visible.toVisibility()
+            layoutReplay.visibility = visible.toVisibility()
             imgDownLoad.visibility = visible.toVisibility()
+
 //            imgLoudspeaker.visibility = visible.toVisibility()
 //            tvName.visibility = visible.toVisibility()
         }
@@ -500,25 +482,25 @@ class PlayingFragment : BaseFragment<FragmentPlayingBinding, PlayingViewModel>()
         Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
     }
 
-    fun handleTextToSpeech(){
-        tts = TextToSpeech(requireContext(), object : TextToSpeech.OnInitListener {
-            override fun onInit(p0: Int) {
-                lifecycleScope.launch {
-                    dataStore.language.collect { language ->
-                        when (language) {
-                            "vi" -> tts!!.language = Locale("vi", "VN")
-                            "en" -> tts!!.language = Locale("en", "US")
-                            else -> tts!!.language = Locale("vi", "VN")
-                        }
-                    }
-                }
-            }
-        })
-
+//    fun handleTextToSpeech(){
+//        tts = TextToSpeech(requireContext(), object : TextToSpeech.OnInitListener {
+//            override fun onInit(p0: Int) {
+//                lifecycleScope.launch {
+//                    dataStore.language.collect { language ->
+//                        when (language) {
+//                            "vi" -> tts!!.language = Locale("vi", "VN")
+//                            "en" -> tts!!.language = Locale("en", "US")
+//                            else -> tts!!.language = Locale("vi", "VN")
+//                        }
+//                    }
+//                }
+//            }
+//        })
+//
 //        binding.imgLoudspeaker.setOnClickListener {
 //            tts!!.speak(binding.tvName.text.toString(), TextToSpeech.QUEUE_FLUSH, null, "")
 //        }
-    }
+//    }
     private fun showExitDialog() {
         if (!isAdded || isDetached) return
 

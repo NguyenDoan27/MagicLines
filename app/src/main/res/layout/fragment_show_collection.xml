@@ -15,28 +15,28 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         android:layout_margin="17sp"
-        android:scaleX="3"
-        android:scaleY="3"/>
+        />
     <ImageView
         android:id="@+id/ivDelete"
         android:layout_width="48sp"
         android:layout_height="48sp"
         android:src="@drawable/delete"
-        android:scaleY="3"
-        android:scaleX="3"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         android:layout_margin="17sp"
         />
     <ImageView
         android:id="@+id/ivShowCollection"
-        android:layout_width="323sp"
-        android:layout_height="480sp"
+        android:layout_width="0sp"
+        android:layout_height="0sp"
+        app:layout_constraintDimensionRatio="3:4.5"
         android:background="@drawable/showing_collection_background"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/ivBack"
-        android:layout_marginTop="42sp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_marginHorizontal="24sp"
+        android:layout_marginTop="12sp"
         />
     <androidx.appcompat.widget.AppCompatButton
         android:id="@+id/btnDownload"

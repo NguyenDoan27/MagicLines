@@ -8,14 +8,12 @@
     android:background="@drawable/background_app1">
     <ImageView
         android:id="@+id/imgBack"
-        android:layout_width="48sp"
-        android:layout_height="48sp"
+        android:layout_width="40sp"
+        android:layout_height="40sp"
         android:src="@drawable/left_back"
         android:layout_margin="17sp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        android:scaleY="3"
-        android:scaleX="3"
         />
     <TextView
         android:id="@+id/tvSetting"

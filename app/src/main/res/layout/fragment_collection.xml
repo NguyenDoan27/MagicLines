@@ -14,16 +14,13 @@
         android:src="@drawable/left_back"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        android:layout_margin="18sp"
-        android:scaleX="3"
-        android:scaleY="3"/>
+        android:layout_margin="18sp" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rcv_category"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:layout_constraintTop_toBottomOf="@id/imgBack"
-        android:background="@drawable/category_recyclerview_background"
         android:layout_marginTop="12sp"
         android:layout_marginHorizontal="8sp"
         />
@@ -41,7 +38,7 @@
 
     <LinearLayout
         android:id="@+id/llNoCollection"
-        android:layout_marginTop="28sp"
+        android:layout_marginTop="40sp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:layout_constraintStart_toStartOf="parent"

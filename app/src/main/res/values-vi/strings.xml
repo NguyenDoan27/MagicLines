@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Magic Lines</string>
+    <string name="app_name">Glow Lines Art</string>
     <string name="settings_icon">redirect to setting screen</string>
     <string name="background">Màu nền</string>
     <string name="music">Nhạc</string>
@@ -18,26 +18,38 @@
     <string name="ads">Q.Cáo</string>
     <string name="button_continue">Tiếp tục</string>
     <string name="your_score">Điểm của bạn:</string>
-    <string name="heart">Trái tym</string>
-    <string name="circle_bolt">Tia sét</string>
-    <string name="guitar">Đàn ghi-ta</string>
-    <string name="glasses">Cái kính</string>
-    <string name="ice_cream">Cây kem</string>
-    <string name="rocket">Tên lửa</string>
-    <string name="pineapple">Quả dứa</string>
-    <string name="meteorite">Thiên thạch</string>
-    <string name="bicycle">Xe đạp</string>
-    <string name="firework">Pháo hoa</string>
-    <string name="hotdog">Xúc xích</string>
-    <string name="fish">Con cá</string>
-    <string name="heart_fly">Trái tym</string>
-    <string name="pig">Con lợn</string>
-    <string name="skullcap">Đầu lâu</string>
-    <string name="alien">Người ngoài hành tinh</string>
-    <string name="moon">Mặt trăng</string>
-    <string name="orange_juice">Nước cam</string>
-    <string name="crab">Con cua</string>
     <string name="download">Tải về</string>
     <string name="move_your_hands">Di chuyển ngón tay của bạn</string>
-    <string name="collection">Bạn chưa có bất kỳ ảnh nào trong bộ sưa tập</string>
+    <string name="collection">Bạn chưa có bất kỳ ảnh nào trong bộ sưu tập</string>
+    <string name="replay">Chơi lại</string>
+    <string name="Next">Qua màn</string>
+    <string name="Music">Âm nhạc</string>
+    <string name="exit">Thoát?</string>
+    <string name="exit_description">Quá trình chơi sẽ không được ghi lại</string>
+    <string name="no">Chơi tiếp</string>
+    <string name="yes">Thoát</string>
+    <string name="delete">Xóa bức tranh này?</string>
+    <string name="keep">Giữ lại</string>
+    <string name="delete_confirm">Xóa!</string>
+    <string name="all">Tất cả</string>
+    <string name="anime">Anime</string>
+    <string name="animal">Động vật</string>
+    <string name="kawaii">Dễ thương</string>
+    <string name="mandala">Nghệ thuật</string>
+    <string name="flowers">Thực vật</string>
+    <string name="fantasy">Kỳ ảo</string>
+    <string name="people">Con người</string>
+    <string-array name="category_name">
+        <item>Tất cả</item>
+        <item>Anime</item>
+        <item>Động vật</item>
+        <item>Dễ thương</item>
+        <item>Nghệ thuật</item>
+        <item>Thực vật</item>
+        <item>Kỳ ảo</item>
+        <item>Con người</item>
+    </string-array>
+    <string name="save">Đã lưu vào thư viện</string>
+    <string name="save_error">Lưu thất bại</string>
+    <string name="no_app_support_email">Không có app nào hỗ trợ gửi mail</string>
 </resources>

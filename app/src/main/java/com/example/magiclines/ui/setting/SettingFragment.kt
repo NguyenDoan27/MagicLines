@@ -16,6 +16,7 @@ import androidx.core.net.toUri
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.magiclines.R
 import com.example.magiclines.base.BaseFragment
 import com.example.magiclines.common.adapter.MusicAdapter2
 import com.example.magiclines.data.SettingDataStore
@@ -42,7 +43,7 @@ class SettingFragment : BaseFragment<FragmentSettingBinding, SettingViewModel>()
         }
         binding.apply {
             swMusic.setOnCheckedChangeListener { _, isChecked ->
-                handleSoundToggle(isChecked)
+                viewModel.setIsSoundEnabled(isChecked)
             }
             layoutContact.setOnClickListener { openContactEmail() }
             layoutRate.setOnClickListener { showRateAppToast() }
@@ -55,28 +56,30 @@ class SettingFragment : BaseFragment<FragmentSettingBinding, SettingViewModel>()
     }
 
     private var dialog: Dialog? = null
-    private lateinit var dataStore: SettingDataStore
+//    private lateinit var dataStore: SettingDataStore
     private var musicAdapter: MusicAdapter2? = null
 
     private var currentLanguageCode: String = "en"
     private var currentMusicPosition: Int = 0
     private var isSoundEnabled: Boolean = true
     private var sounds: List<Audio> = emptyList()
+    private val viewModel: SettingViewModel by lazy {
+        SettingViewModel(SettingDataStore(requireContext()))
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        viewModel.getData()
 
         musicAdapter = MusicAdapter2(
             requireContext(),
             currentMusicPosition
         ) { position ->
-            lifecycleScope.launch {
-                dataStore.saveMusicPosition(position)
-                with(Intent(requireContext(), SoundService::class.java)) {
-                    if (isSoundEnabled) {
-                        requireContext().stopService(this)
-                        requireContext().startService(this)
-                    }
+            viewModel.setMusicPosition(position)
+            with(Intent(requireContext(), SoundService::class.java)) {
+                if (isSoundEnabled) {
+                    requireContext().stopService(this)
+                    requireContext().startService(this)
                 }
             }
         }
@@ -84,36 +87,33 @@ class SettingFragment : BaseFragment<FragmentSettingBinding, SettingViewModel>()
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        initDataStore()
-        observeDataChanges()
-    }
 
 
-    private fun initDataStore() {
-        dataStore = SettingDataStore(requireContext())
-    }
+        viewModel.musics.observe(viewLifecycleOwner) { musics ->
+            sounds = musics
+            updateMusicAdapter()
+        }
+        viewModel.currentMusicPosition.observe(viewLifecycleOwner) { pos ->
+            currentMusicPosition = pos
+            musicAdapter!!.setSelectedMusic(pos)
+            binding.rcvSounds.smoothScrollToPosition(pos)
+        }
 
-
-
-    private fun observeDataChanges() {
-        lifecycleScope.launch {
-            combine(
-                dataStore.musics,
-                dataStore.readMusicPosition(),
-                dataStore.readStateSound(),
-                dataStore.language
-            ) { musics, position, state, language ->
-                Quad(musics, position, state, language)
-            }.distinctUntilChanged()
-                .collect { (musics, pos, state, language) ->
-                    sounds = musics
-                    currentMusicPosition = pos
-                    isSoundEnabled = state
-                    currentLanguageCode = language
-                    Log.e("TAG", "observeDataChanges: $isSoundEnabled", )
-                    updateMusicAdapter()
-                    binding.swMusic.isChecked = state
+        viewModel.isSoundEnabled.observe(viewLifecycleOwner) { isEnabled ->
+            isSoundEnabled = isEnabled
+            binding.swMusic.isChecked = isEnabled
+            with(Intent(requireContext(), SoundService::class.java)) {
+                if (isEnabled) {
+                    requireContext().stopService(this)
+                    requireContext().startService(this)
+                } else {
+                    requireContext().stopService(this)
                 }
+            }
+        }
+
+        viewModel.currentLanguageCode.observe(viewLifecycleOwner) { language ->
+            currentLanguageCode = language
         }
     }
 
@@ -125,21 +125,6 @@ class SettingFragment : BaseFragment<FragmentSettingBinding, SettingViewModel>()
     }
 
 
-    private fun handleSoundToggle(isEnabled: Boolean) {
-            lifecycleScope.launch {
-                dataStore.saveStateSound(isEnabled)
-                with(Intent(requireContext(), SoundService::class.java)) {
-                    if (isEnabled) {
-                        Log.e("TAG", "handleSoundToggle: start", )
-                        requireContext().startService(this)
-                    } else {
-                        requireContext().stopService(this)
-                    }
-                }
-            }
-    }
-
-
     private fun openContactEmail() {
         val emailUri = "mailto:doannguyen22702@gmail.com" +
                 "?subject=" + Uri.encode("Report my app")
@@ -148,7 +133,7 @@ class SettingFragment : BaseFragment<FragmentSettingBinding, SettingViewModel>()
             data = emailUri.toUri()
         }.takeIf { it.resolveActivity(requireActivity().packageManager) != null }?.let {
             startActivity(it)
-        } ?: showToast("No app support to send mail")
+        } ?: showToast(resources.getString(R.string.no_app_support_email))
     }
 
     private fun showRateAppToast() {
@@ -223,21 +208,10 @@ class SettingFragment : BaseFragment<FragmentSettingBinding, SettingViewModel>()
     }
 
     private fun handleLanguageSelection(languageCode: String) {
-        lifecycleScope.launch {
-            dataStore.saveLanguage(languageCode)
-        }
+        viewModel.setLanguage(languageCode)
     }
 
     private fun showToast(message: String) {
         Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
     }
-
-    private data class Quad<out A, out B, out C, out D>(
-        val first: A,
-        val second: B,
-        val third: C,
-        val fourth: D
-    )
-
-
 }

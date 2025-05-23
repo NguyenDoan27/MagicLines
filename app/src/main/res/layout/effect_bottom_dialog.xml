@@ -37,20 +37,20 @@
         android:layout_marginTop="12sp"
         android:layout_marginStart="16sp"
         />
-    <com.google.android.material.switchmaterial.SwitchMaterial
-        android:id="@+id/sw_music"
-        android:layout_width="wrap_content"
-        android:layout_height="16sp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/rcv_backgroundList"
-        android:layout_marginTop="12sp"
-        android:layout_marginEnd="16sp"
-        />
+<!--    <com.google.android.material.switchmaterial.SwitchMaterial-->
+<!--        android:id="@+id/sw_music"-->
+<!--        android:layout_width="wrap_content"-->
+<!--        android:layout_height="16sp"-->
+<!--        app:layout_constraintEnd_toEndOf="parent"-->
+<!--        app:layout_constraintTop_toBottomOf="@id/rcv_backgroundList"-->
+<!--        android:layout_marginTop="12sp"-->
+<!--        android:layout_marginEnd="16sp"-->
+<!--        />-->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rcv_musicList"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:layout_constraintTop_toBottomOf="@id/sw_music"
+        app:layout_constraintTop_toBottomOf="@id/tvMusic"
         android:layout_marginTop="12sp"
         android:layout_marginHorizontal="8sp"
         />

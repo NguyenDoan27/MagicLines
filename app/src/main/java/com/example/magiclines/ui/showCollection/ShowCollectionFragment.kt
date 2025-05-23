@@ -25,17 +25,14 @@ import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.core.graphics.createBitmap
 import androidx.core.graphics.drawable.toDrawable
-import androidx.fragment.app.Fragment
-import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
+import com.example.magiclines.R
 import com.example.magiclines.base.BaseFragment
 import com.example.magiclines.data.SettingDataStore
 import com.example.magiclines.databinding.DeleteArtDialogBinding
 import com.example.magiclines.databinding.FragmentShowCollectionBinding
 import com.example.magiclines.models.Level
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.launch
 import java.io.File
 import java.io.FileOutputStream
 import java.text.SimpleDateFormat
@@ -56,16 +53,23 @@ class ShowCollectionFragment : BaseFragment<FragmentShowCollectionBinding, ShowC
 
     private var level: Level? = null
     private val args: ShowCollectionFragmentArgs by navArgs()
-    private val dataStore: SettingDataStore by lazy { SettingDataStore(requireContext()) }
+//    private val dataStore: SettingDataStore by lazy { SettingDataStore(requireContext()) }
     private var levels: List<Level> = listOf()
     private var dialog: Dialog? = null
+    private val viewModel: ShowCollectionViewModel by lazy { ShowCollectionViewModel(SettingDataStore(requireContext())) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         level = args.level
-        lifecycleScope.launch {
-            levels = dataStore.levelsFlow.first()
+        viewModel.getData()
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        viewModel.levels.observe (viewLifecycleOwner){levels ->
+            this.levels = levels
         }
     }
 
@@ -94,9 +98,7 @@ class ShowCollectionFragment : BaseFragment<FragmentShowCollectionBinding, ShowC
                             i.isComplete = false
                         }
                     }
-                    lifecycleScope.launch {
-                        dataStore.saveLevel(levels)
-                    }
+                    viewModel.saveLevel(levels)
                     dialog!!.dismiss()
                     findNavController().popBackStack()
                 }
@@ -174,10 +176,10 @@ class ShowCollectionFragment : BaseFragment<FragmentShowCollectionBinding, ShowC
         requireContext().contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values)?.let { uri ->
             requireContext().contentResolver.openOutputStream(uri)?.use {
                 if (bitmap.compress(Bitmap.CompressFormat.PNG, 100, it)) {
-                    showToast("Saved to Gallery")
+                    showToast(resources.getString(R.string.save))
                 }
             }
-        } ?: showToast("Failed to save image")
+        } ?: showToast(resources.getString(R.string.save_error))
     }
 
     private fun showToast(message: String) {

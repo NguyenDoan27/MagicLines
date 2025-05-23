@@ -48,7 +48,7 @@ class MusicAdapter2(private val context: Context, var currentPosition: Int, val 
     }
 
     @SuppressLint("NotifyDataSetChanged")
-    private fun setSelectedMusic(position: Int){
+     fun setSelectedMusic(position: Int){
         currentPosition = position
         notifyDataSetChanged()
     }

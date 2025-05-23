@@ -38,7 +38,7 @@ class LevelPlayerAdapter2 (val context: Context, val listener: FilterListener, v
             holder.imgCenterStar.visibility = View.VISIBLE
             holder.imgLeftStar.visibility = View.VISIBLE
 
-            when(item.getStar()){
+            when(item.star){
                 0 -> {
                     holder.imgRightStar.setImageResource(R.drawable.empty_star)
                     holder.imgCenterStar.setImageResource(R.drawable.empty_star)
@@ -71,7 +71,7 @@ class LevelPlayerAdapter2 (val context: Context, val listener: FilterListener, v
                 results.values = if (query.isBlank()) {
                     originalItems
                 } else {
-                    originalItems.filter { it.category.lowercase().contains(query) }
+                    originalItems.filter { context.getString(it.category).lowercase().contains(query) }
                 }
                 return results
             }
