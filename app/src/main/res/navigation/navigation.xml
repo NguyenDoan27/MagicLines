@@ -5,7 +5,7 @@
     android:id="@+id/navigation"
     app:startDestination="@id/splashFragment">
     <fragment
-        android:name="com.example.magiclines.fragments.HomeFragment"
+        android:name="com.example.magiclines.ui.home.HomeFragment"
         android:id="@+id/homeFragment"
         android:label="Home"
         app:layout="@layout/fragment_home"
@@ -18,7 +18,7 @@
             app:destination="@id/settingsFragment"/>
     </fragment>
     <fragment
-        android:name="com.example.magiclines.fragments.CollectionFragment"
+        android:name="com.example.magiclines.ui.collection.CollectionFragment"
         android:id="@+id/collectionFragment"
         android:label="Library"
         app:layout="@layout/fragment_collection"
@@ -30,7 +30,7 @@
         </action>
     </fragment>
     <fragment
-        android:name="com.example.magiclines.fragments.PlayingFragment"
+        android:name="com.example.magiclines.ui.playing.PlayingFragment"
         android:id="@+id/playingFragment"
         android:label="Playing"
         app:layout="@layout/fragment_playing"
@@ -40,13 +40,13 @@
         <argument android:name="position" app:argType="integer"/>
     </fragment>
     <fragment
-        android:name="com.example.magiclines.fragments.SettingFragment"
+        android:name="com.example.magiclines.ui.setting.SettingFragment"
         android:id="@+id/settingsFragment"
         android:label="Settings"
         app:layout="@layout/fragment_setting"
         tools:layout="@layout/fragment_setting"/>
     <fragment
-        android:name="com.example.magiclines.fragments.SelectionLevelFragment"
+        android:name="com.example.magiclines.ui.selectionLevel.SelectLevelFragment"
         android:id="@+id/selectLevelFragment"
         android:label="Select Level"
         app:layout="@layout/fragment_selection_level"
@@ -60,7 +60,7 @@
         </action>
     </fragment>
     <fragment
-        android:name="com.example.magiclines.fragments.SplashFragment"
+        android:name="com.example.magiclines.ui.splash.SplashFragment"
         android:id="@+id/splashFragment"
         android:label="Splash"
         app:layout="@layout/fragment_splash"
@@ -68,7 +68,7 @@
         <action android:id="@+id/action_splashFragment_to_homeFragment"
             app:destination="@id/homeFragment"/>
     </fragment>
-    <fragment android:name="com.example.magiclines.fragments.ShowCollectionFragment"
+    <fragment android:name="com.example.magiclines.ui.showCollection.ShowCollectionFragment"
         android:id="@+id/showCollectionFragment"
         android:label="Show Collection"
         app:layout="@layout/fragment_show_collection"

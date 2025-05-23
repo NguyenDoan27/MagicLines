@@ -15,6 +15,7 @@ import android.graphics.RectF
 import android.graphics.drawable.ColorDrawable
 import android.os.Handler
 import android.os.Looper
+import android.util.AttributeSet
 import android.util.Log
 import android.view.Gravity
 import android.view.MotionEvent
@@ -25,6 +26,7 @@ import android.widget.Button
 import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.annotation.DrawableRes
 import androidx.core.graphics.PathParser
 import com.example.magiclines.R
 import org.xmlpull.v1.XmlPullParser
@@ -34,11 +36,11 @@ import kotlin.math.abs
 import kotlin.random.Random
 import androidx.core.graphics.drawable.toDrawable
 
-@SuppressLint("ViewConstructor")
-class PlayingView(
+class PlayingView @JvmOverloads constructor(
     context: Context,
-    private val level: Level
-) : View(context) {
+    attrs: AttributeSet? = null,
+    defStyleAttr: Int = 0
+) : View(context, attrs, defStyleAttr) {
 
     val paths = mutableListOf<PathInfo>()
     private var isTouchEnabled = true
@@ -54,6 +56,8 @@ class PlayingView(
     private var startTime: Long = 0
     private var directX = -1
     private var directY = -1
+    private var star = 0
+    private var level: Level? = null
 
     data class PathInfo(
         val originalPath: Path,
@@ -62,7 +66,7 @@ class PlayingView(
         val path: Path,
         val fillPaint: Paint,
         val strokePaint: Paint?,
-        val glowPaint: Paint?, // Paint cho hiệu ứng glow
+        val glowPaint: Paint?,
         val relativeBounds: RectF,
         var initialX: Float,
         var initialY: Float,
@@ -79,15 +83,19 @@ class PlayingView(
     )
 
     init {
-        parseVectorDrawable(level.resourceId)
+        // Initialize dialog
+        dialog = Dialog(context).apply {
+            setContentView(R.layout.finishing_dialog)
+            window?.setBackgroundDrawable(Color.TRANSPARENT.toDrawable())
+        }
+
+
         isClickable = true
         isFocusable = true
-        dialog = Dialog(context)
-        dialog.setContentView(R.layout.finishing_dialog)
         startTime = System.nanoTime()
     }
 
-    private fun parseVectorDrawable(drawableId: Int) {
+     fun parseVectorDrawable( drawableId: Int) {
         val parser = resources.getXml(drawableId)
         var vectorWidth = 0f
         var vectorHeight = 0f
@@ -125,32 +133,30 @@ class PlayingView(
                     val initialY = bounds.centerY() - (vectorHeight / 2f)
 
                     val fillPaint = Paint().apply {
-                        this.color = fillColor
-                        this.isAntiAlias = true
-                        this.style = if (fillColor != Color.TRANSPARENT) Paint.Style.FILL else Paint.Style.STROKE
+                        color = fillColor
+                        isAntiAlias = true
+                        style = if (fillColor != Color.TRANSPARENT) Paint.Style.FILL else Paint.Style.STROKE
                     }
 
                     val strokePaint = if (strokeColor != null && strokeWidth > 0) {
                         Paint().apply {
-                            this.color = strokeColor
-                            this.isAntiAlias = true
-                            this.style = Paint.Style.STROKE
+                            color = strokeColor
+                            isAntiAlias = true
+                            style = Paint.Style.STROKE
                             this.strokeWidth = strokeWidth
                         }
                     } else {
                         null
                     }
 
-                    // Paint cho hiệu ứng glow
                     val glowPaint = if (fillColor != Color.TRANSPARENT || strokeColor != null) {
                         Paint().apply {
-                            this.color = strokeColor ?: fillColor
-                            this.isAntiAlias = true
-                            this.style = if (strokeColor != null) Paint.Style.STROKE else Paint.Style.FILL
-                            this.strokeWidth = if (strokeColor != null) strokeWidth + 10f else 0f // Tăng strokeWidth cho glow
-                            this.setMaskFilter(BlurMaskFilter(10f, BlurMaskFilter.Blur.NORMAL)) // Hiệu ứng glow
-
-                            this.alpha = 250 // Độ trong suốt của glow (0-255)
+                            color = strokeColor ?: fillColor
+                            isAntiAlias = true
+                            style = if (strokeColor != null) Paint.Style.STROKE else Paint.Style.FILL
+                            this.strokeWidth = if (strokeColor != null) strokeWidth + 10f else 0f
+                            setMaskFilter(BlurMaskFilter(36f, BlurMaskFilter.Blur.NORMAL))
+                            alpha = 250
                         }
                     } else {
                         null
@@ -170,14 +176,12 @@ class PlayingView(
 
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
-
         paths.forEach { path ->
             canvas.save()
             matrix.reset()
-
             matrix.postTranslate(
-                path.offsetX - path.initialX  - path.width / 2,
-                path.offsetY - path.initialY  - path.height / 2
+                path.offsetX - path.initialX - path.width / 2,
+                path.offsetY - path.initialY - path.height / 2
             )
             canvas.concat(matrix)
             path.glowPaint?.let { canvas.drawPath(path.path, it) }
@@ -199,7 +203,6 @@ class PlayingView(
             }
         }
         paths.forEach { path ->
-
             path.directionX = if (Random.nextBoolean()) 1 else -1
             path.directionY = if (Random.nextBoolean()) 1 else -1
             directX *= -1
@@ -216,9 +219,7 @@ class PlayingView(
 
     override fun onTouchEvent(event: MotionEvent?): Boolean {
         event?.let {
-            if (!isTouchEnabled) {
-                return false
-            }
+            if (!isTouchEnabled) return false
             when (it.action) {
                 MotionEvent.ACTION_DOWN -> {
                     touchX = it.x
@@ -310,7 +311,7 @@ class PlayingView(
 
         if (allAligned) {
             snapToOriginalPosition()
-            level.isComplete = true
+            level?.isComplete = true
             setTouchEnabled(false)
             val endTime = System.nanoTime()
             val timeStop = endTime - startTime
@@ -320,17 +321,15 @@ class PlayingView(
             val minutes = (durationInMs / (1000 * 60)) % 60
 
             when {
-                seconds < 10 && minutes <= 1 -> level.setStar(3)
-                seconds >= 10 && seconds <= 20 && minutes <= 1-> level.setStar(2)
-                else -> level.setStar(1)
+                seconds < 10 && minutes <= 1 -> star = 3
+                seconds in 10..20 && minutes <= 1 -> star = 2
+                else -> star = 1
             }
             val handler = Handler(Looper.getMainLooper())
-            val action = Runnable {
-                showDialog(endTime)
-            }
+            val action = Runnable { showDialog(endTime) }
             val delayMillis: Long = 1800
             handler.postDelayed(action, delayMillis)
-            listener?.onComplete()
+            listener?.onComplete(star = star)
         }
     }
 
@@ -341,9 +340,9 @@ class PlayingView(
 
         paths.forEach { path ->
             if (path.centerX == 0f || path.centerY == 0f) return@forEach
-            val targetOffsetX = (path.centerX + path.initialX  + randomOffsetX * path.directionX)
+            val targetOffsetX = (path.centerX + path.initialX + randomOffsetX * path.directionX)
                 .coerceIn(path.x - maxOffset, path.x + maxOffset)
-            val targetOffsetY = (path.centerY + path.initialY  + randomOffsetX * path.directionY)
+            val targetOffsetY = (path.centerY + path.initialY + randomOffsetX * path.directionY)
                 .coerceIn(path.y - maxOffset, path.y + maxOffset)
 
             val animatorX = ValueAnimator.ofFloat(path.offsetX, targetOffsetX).apply {
@@ -367,7 +366,7 @@ class PlayingView(
         }
     }
 
-    @SuppressLint("SetTextI18n", "Recycle")
+    @SuppressLint("SetTextI18n")
     fun showDialog(endTime: Long) {
         val timeStop = endTime - startTime
         val durationInMs = timeStop / 1_000_000
@@ -381,16 +380,19 @@ class PlayingView(
 
         when {
             seconds < 10 && minutes <= 1 -> {
+                Log.e("TAG", "showDialog: 3")
                 imgStarLeft.setImageResource(R.drawable.favourites)
                 imgStarCenter.setImageResource(R.drawable.favourites)
                 imgStarRight.setImageResource(R.drawable.favourites)
             }
-            seconds >= 10 && seconds <= 20 && minutes <= 1-> {
+            seconds in 10..20 && minutes <= 1 -> {
+                Log.e("TAG", "showDialog: 2")
                 imgStarLeft.setImageResource(R.drawable.favourites)
                 imgStarCenter.setImageResource(R.drawable.favourites)
                 imgStarRight.setImageResource(R.drawable.empty_star)
             }
             else -> {
+                Log.e("TAG", "showDialog: 1")
                 imgStarLeft.setImageResource(R.drawable.favourites)
                 imgStarCenter.setImageResource(R.drawable.empty_star)
                 imgStarRight.setImageResource(R.drawable.empty_star)
@@ -419,10 +421,7 @@ class PlayingView(
             .start()
 
         txtShowTime.text = "\"$minutes\" : \"$seconds\""
-        btnContinue.setOnClickListener {
-            dialog.dismiss()
-        }
-        dialog.window!!.setBackgroundDrawable(Color.TRANSPARENT.toDrawable())
+        btnContinue.setOnClickListener { dialog.dismiss() }
         dialog.show()
     }
 
@@ -431,17 +430,52 @@ class PlayingView(
     }
 
     interface OnProcessingCompleteListener {
-        fun onComplete()
+        fun onComplete(star: Int)
     }
 
     fun setOnProcessingCompleteListener(listener: OnProcessingCompleteListener) {
         this.listener = listener
     }
+
+    fun nextLevel(@DrawableRes nextDrawableId: Int) {
+        // 1. Clear existing paths
+        paths.clear()
+
+        // 2. Reset state
+        startTime = System.nanoTime()
+        star = 0
+        isTouchEnabled = true
+
+        // 3. Parse new vector drawable
+        parseVectorDrawable(nextDrawableId)
+
+        // 4. Force recalculation of positions
+        post {
+            // Gọi lại onSizeChanged với kích thước hiện tại
+            onSizeChanged(width, height, width, height)
+
+            // Hoặc reset thủ công các tọa độ
+            relativeX = width / 2f
+            relativeY = height / 2f
+
+            paths.forEach { path ->
+                path.centerX = relativeX
+                path.centerY = relativeY
+                path.offsetX = path.centerX + path.initialX
+                path.offsetY = path.centerY + path.initialY
+                path.x = relativeX + path.initialX
+                path.y = relativeY + path.initialY
+            }
+
+            scramblePaths()
+            invalidate()
+        }
+    }
 }
 
 fun String.toColorInt(): Int? {
     return try {
-        Color.parseColor(this)
+        this.toColorInt()
     } catch (e: Exception) {
         null
     }

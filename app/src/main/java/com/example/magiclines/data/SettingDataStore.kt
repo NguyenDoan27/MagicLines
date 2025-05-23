@@ -34,13 +34,36 @@ class SettingDataStore(private val context: Context) {
     )
 
     private var levels = arrayListOf<Level>(
-        Level(1, R.string.orange_juice, R.drawable.test_600, false,"Object"),
-        Level(2, R.string.orange_juice, R.drawable.frame_6, false,"Action"),
-        Level(3, R.string.orange_juice, R.drawable.frame_7, false,"Symbol"),
-        Level(4, R.string.orange_juice, R.drawable.frame_8, false,"Animal"),
-        Level(5, R.string.orange_juice, R.drawable.frame_10, false,""),
-        Level(6, R.string.orange_juice, R.drawable.vit_test, false,""),
-        Level(7, R.string.orange_juice, R.drawable.test_700, false,""),
+        Level(1, R.string.orange_juice, R.drawable.anime_and_cartoon_03, false, "Anime"),
+        Level(2, R.string.orange_juice, R.drawable.animal_10, false, "Animal"),
+        Level(3, R.string.orange_juice, R.drawable.cute_kawaii_07, false, "Kawaii"),
+        Level(4, R.string.orange_juice, R.drawable.anime_and_cartoon_01, false, "Anime"),
+        Level(5, R.string.orange_juice, R.drawable.animal_02, false, "Animal"),
+        Level(6, R.string.orange_juice, R.drawable.anime_and_cartoon_06, false, "Anime"),
+        Level(7, R.string.orange_juice, R.drawable.cute_kawaii_05, false, "Kawaii"),
+        Level(8, R.string.orange_juice, R.drawable.animal_03, false, "Animal"),
+        Level(9, R.string.orange_juice, R.drawable.anime_and_cartoon_05, false, "Anime"),
+        Level(10, R.string.orange_juice, R.drawable.cute_kawaii_10, false, "Kawaii"),
+        Level(11, R.string.orange_juice, R.drawable.anime_and_cartoon_02, false, "Anime"),
+        Level(12, R.string.orange_juice, R.drawable.animal_01, false, "Animal"),
+        Level(13, R.string.orange_juice, R.drawable.cute_kawaii_01, false, "Kawaii"),
+        Level(14, R.string.orange_juice, R.drawable.animal_04, false, "Animal"),
+        Level(15, R.string.orange_juice, R.drawable.anime_and_cartoon_04, false, "Anime"),
+        Level(16, R.string.orange_juice, R.drawable.animal_06, false, "Animal"),
+        Level(17, R.string.orange_juice, R.drawable.cute_kawaii_02, false, "Kawaii"),
+        Level(18, R.string.orange_juice, R.drawable.animal_05, false, "Animal"),
+        Level(19, R.string.orange_juice, R.drawable.cute_kawaii_03, false, "Kawaii"),
+        Level(20, R.string.orange_juice, R.drawable.animal_09, false, "Animal"),
+        Level(21, R.string.orange_juice, R.drawable.cute_kawaii_06, false, "Kawaii"),
+        Level(22, R.string.orange_juice, R.drawable.animal_08, false, "Animal"),
+        Level(23, R.string.orange_juice, R.drawable.cute_kawaii_04, false, "Kawaii"),
+        Level(24, R.string.orange_juice, R.drawable.cute_kawaii_08, false, "Kawaii"),
+        Level(25, R.string.orange_juice, R.drawable.animal_07, false, "Animal"),
+        Level(26, R.string.orange_juice, R.drawable.cute_kawaii_09, false, "Kawaii"),
+        Level(27, R.string.orange_juice, R.drawable.animal_10, false, "Animal"),
+        Level(28, R.string.orange_juice, R.drawable.animal_01, false, "Animal"),
+        Level(29, R.string.orange_juice, R.drawable.anime_and_cartoon_09, false, "Anime"),
+        Level(30, R.string.orange_juice, R.drawable.anime_and_cartoon_10, false, "Anime")
     )
 
     suspend fun initData(){
