@@ -1,3 +1,4 @@
+
 package com.example.magiclines.ui.setting
 
 import android.app.Dialog
@@ -24,9 +25,7 @@ import com.example.magiclines.databinding.FragmentSettingBinding
 import com.example.magiclines.databinding.SelectLanguageDialogBinding
 import com.example.magiclines.models.Audio
 import com.example.magiclines.services.SoundService
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.launch
+
 
 class SettingFragment : BaseFragment<FragmentSettingBinding, SettingViewModel>() {
 
@@ -56,7 +55,7 @@ class SettingFragment : BaseFragment<FragmentSettingBinding, SettingViewModel>()
     }
 
     private var dialog: Dialog? = null
-//    private lateinit var dataStore: SettingDataStore
+    //    private lateinit var dataStore: SettingDataStore
     private var musicAdapter: MusicAdapter2? = null
 
     private var currentLanguageCode: String = "en"

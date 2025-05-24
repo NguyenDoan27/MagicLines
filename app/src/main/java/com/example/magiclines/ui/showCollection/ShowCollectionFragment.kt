@@ -1,6 +1,7 @@
 package com.example.magiclines.ui.showCollection
 
 import android.Manifest
+import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
 import android.app.Dialog
 import android.content.ContentValues
@@ -13,6 +14,8 @@ import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import android.os.Build
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.provider.MediaStore
 import android.util.Log
 import android.view.LayoutInflater
@@ -53,7 +56,6 @@ class ShowCollectionFragment : BaseFragment<FragmentShowCollectionBinding, ShowC
 
     private var level: Level? = null
     private val args: ShowCollectionFragmentArgs by navArgs()
-//    private val dataStore: SettingDataStore by lazy { SettingDataStore(requireContext()) }
     private var levels: List<Level> = listOf()
     private var dialog: Dialog? = null
     private val viewModel: ShowCollectionViewModel by lazy { ShowCollectionViewModel(SettingDataStore(requireContext())) }
@@ -100,7 +102,14 @@ class ShowCollectionFragment : BaseFragment<FragmentShowCollectionBinding, ShowC
                     }
                     viewModel.saveLevel(levels)
                     dialog!!.dismiss()
-                    findNavController().popBackStack()
+                    binding.progressBar.visibility = View.VISIBLE
+                    binding.progressBar.max = 1000
+                    ObjectAnimator.ofInt(binding.progressBar, "progress", 1000)
+                        .setDuration(500)
+                        .start()
+                    Handler(Looper.getMainLooper()).postDelayed({
+                        findNavController().popBackStack()
+                    }, 500)
                 }
                 show()
             }

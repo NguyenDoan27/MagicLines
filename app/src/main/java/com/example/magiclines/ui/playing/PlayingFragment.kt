@@ -22,7 +22,6 @@ import android.provider.MediaStore
 import android.speech.tts.TextToSpeech
 import android.util.Log
 import android.view.LayoutInflater
-import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
@@ -31,11 +30,9 @@ import android.widget.ImageView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
-import androidx.core.content.FileProvider
 import androidx.core.graphics.createBitmap
 import androidx.core.graphics.drawable.toDrawable
 import androidx.core.graphics.toColorInt
-import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -52,18 +49,13 @@ import com.example.magiclines.models.Level
 import com.example.magiclines.services.SoundService
 import com.example.magiclines.views.PlayingView
 import com.google.android.material.bottomsheet.BottomSheetDialog
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.launch
 import nl.dionsegijn.konfetti.core.Party
 import nl.dionsegijn.konfetti.core.Position
 import nl.dionsegijn.konfetti.core.emitter.Emitter
-import java.io.File
-import java.io.FileOutputStream
 import java.text.SimpleDateFormat
 import java.util.Locale
 import java.util.concurrent.TimeUnit
-import kotlin.math.abs
+
 
 class PlayingFragment : BaseFragment<FragmentPlayingBinding, PlayingViewModel>(), PlayingView.OnProcessingCompleteListener {
 
@@ -98,8 +90,6 @@ class PlayingFragment : BaseFragment<FragmentPlayingBinding, PlayingViewModel>()
     private var exitDialog: Dialog? = null
     private val viewModel: PlayingViewModel by lazy { PlayingViewModel(SettingDataStore(requireContext())) }
 
-    private var scaleFactor = 1f
-    private val matrix = android.graphics.Matrix()
 
     private val backgrounds = listOf(
         Color("Green", "#000000"),
@@ -130,16 +120,6 @@ class PlayingFragment : BaseFragment<FragmentPlayingBinding, PlayingViewModel>()
                 viewModel.setIsPlaying(!isPlaying)
                 isPlaying  =  !isPlaying
             }
-//            imgShare.setOnClickListener { shareCurrentLevel() }
-
-//            binding.imgDownLoad.scaleType = ImageView.ScaleType.MATRIX
-//            matrix.set(binding.imgDownLoad.imageMatrix)
-//            binding.imgDownLoad.imageMatrix = matrix
-//            scaleFactor *= 3f
-//            val centerX = binding.imgDownLoad.width / 2f
-//            val centerY = binding.imgDownLoad.height / 2f
-//            matrix.postScale(scaleFactor, scaleFactor, centerX, centerY)
-//            binding.imgDownLoad.imageMatrix = matrix
         }
     }
 
@@ -151,7 +131,6 @@ class PlayingFragment : BaseFragment<FragmentPlayingBinding, PlayingViewModel>()
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         initData()
-//        handleTextToSpeech()
 
         viewModel.getInitData()
         viewModel.getMusics()
@@ -240,7 +219,7 @@ class PlayingFragment : BaseFragment<FragmentPlayingBinding, PlayingViewModel>()
         if (levels.isNotEmpty() && position != -1) {
             setupCustomView()
         } else {
-            showToast("No level available")
+            showToast(getString(R.string.level_unavailable))
         }
     }
 
@@ -261,7 +240,7 @@ class PlayingFragment : BaseFragment<FragmentPlayingBinding, PlayingViewModel>()
     private fun loadNextLevel() {
         position++
         if (position == levels.size ) {
-            Toast.makeText(requireContext(), "No more level", Toast.LENGTH_SHORT).show()
+            Toast.makeText(requireContext(), getString(R.string.no_more_level), Toast.LENGTH_SHORT).show()
             return
         }else{
             binding.frPlaying.nextLevel(levels[position].resourceId)
@@ -280,17 +259,10 @@ class PlayingFragment : BaseFragment<FragmentPlayingBinding, PlayingViewModel>()
         }
     }
 
-    @SuppressLint("UseCompatLoadingForDrawables")
-    private fun shareCurrentLevel() {
-        levels.getOrNull(position)?.resourceId?.let { resId ->
-            shareDrawable(resources.getDrawable(resId))
-        }
-    }
 
     private fun updateBackgroundColor(color: String?) {
         color?.let {
             val colorInt = color.toColorInt()
-            val strokeColor = ContextCompat.getColor(requireContext(), R.color.light_blue)
 
             binding.main.setGradientBackground(colorInt)
             binding.frPlaying.setGradientBackground(colorInt)
@@ -308,7 +280,6 @@ class PlayingFragment : BaseFragment<FragmentPlayingBinding, PlayingViewModel>()
                 setContentView(dialogBinding?.root ?: return@apply)
                 setupMusicAdapter()
                 setupBackgroundAdapter()
-//                setupSoundSwitch()
                 setOnDismissListener { dialogBinding = null }
                 show()
             }
@@ -350,15 +321,6 @@ class PlayingFragment : BaseFragment<FragmentPlayingBinding, PlayingViewModel>()
             adapter = backgroundAdapter
             backgroundAdapter!!.submitList(backgrounds)
         }
-    }
-
-    private fun setupSoundSwitch() {
-//        dialogBinding?.swMusic?.apply {
-//            isChecked = isPlaying
-//            setOnCheckedChangeListener { _, isChecked ->
-//                viewModel.setIsPlaying(isChecked)
-//            }
-//        }
     }
 
     private fun allPermissionsGranted() = REQUIRED_PERMISSIONS.all {
@@ -411,36 +373,10 @@ class PlayingFragment : BaseFragment<FragmentPlayingBinding, PlayingViewModel>()
         requireContext().contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values)?.let { uri ->
             requireContext().contentResolver.openOutputStream(uri)?.use {
                 if (bitmap.compress(Bitmap.CompressFormat.PNG, 100, it)) {
-                    showToast("Saved to Gallery")
+                    showToast(getString(R.string.save))
                 }
             }
-        } ?: showToast("Failed to save image")
-    }
-
-    private fun shareDrawable(drawable: Drawable) {
-        val bitmap = drawableToBitmap(drawable)
-        val cacheFile = File(requireContext().cacheDir, "images/shared_image.png").apply {
-            parentFile?.mkdirs()
-            FileOutputStream(this).use {
-                bitmap.compress(Bitmap.CompressFormat.PNG, 100, it)
-            }
-        }
-
-        val contentUri = FileProvider.getUriForFile(
-            requireContext(),
-            "${requireContext().packageName}.fileprovider",
-            cacheFile
-        )
-
-        Intent.createChooser(
-            Intent().apply {
-                action = Intent.ACTION_SEND
-                putExtra(Intent.EXTRA_STREAM, contentUri)
-                type = "image/png"
-                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-            },
-            "Share image"
-        ).let { startActivity(it) }
+        } ?: showToast(getString(R.string.save_error))
     }
 
     private fun handleLevelCompletion(originLevels: List<Level>, playingLevels: List<Level>,pos: Int, star: Int) {
@@ -459,7 +395,6 @@ class PlayingFragment : BaseFragment<FragmentPlayingBinding, PlayingViewModel>()
 
             binding.konfettiView.start(party)
         }
-//        binding.tvName.text = getString(levels[position].resourceName)
         handle.postDelayed(action, 1000)
         setToolbarVisibility(true)
         isComplete = true
@@ -470,9 +405,6 @@ class PlayingFragment : BaseFragment<FragmentPlayingBinding, PlayingViewModel>()
             layoutNext.visibility = visible.toVisibility()
             layoutReplay.visibility = visible.toVisibility()
             imgDownLoad.visibility = visible.toVisibility()
-
-//            imgLoudspeaker.visibility = visible.toVisibility()
-//            tvName.visibility = visible.toVisibility()
         }
     }
 
@@ -482,25 +414,6 @@ class PlayingFragment : BaseFragment<FragmentPlayingBinding, PlayingViewModel>()
         Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
     }
 
-//    fun handleTextToSpeech(){
-//        tts = TextToSpeech(requireContext(), object : TextToSpeech.OnInitListener {
-//            override fun onInit(p0: Int) {
-//                lifecycleScope.launch {
-//                    dataStore.language.collect { language ->
-//                        when (language) {
-//                            "vi" -> tts!!.language = Locale("vi", "VN")
-//                            "en" -> tts!!.language = Locale("en", "US")
-//                            else -> tts!!.language = Locale("vi", "VN")
-//                        }
-//                    }
-//                }
-//            }
-//        })
-//
-//        binding.imgLoudspeaker.setOnClickListener {
-//            tts!!.speak(binding.tvName.text.toString(), TextToSpeech.QUEUE_FLUSH, null, "")
-//        }
-//    }
     private fun showExitDialog() {
         if (!isAdded || isDetached) return
 

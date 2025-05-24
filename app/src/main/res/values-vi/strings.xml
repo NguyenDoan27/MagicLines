@@ -52,4 +52,6 @@
     <string name="save">Đã lưu vào thư viện</string>
     <string name="save_error">Lưu thất bại</string>
     <string name="no_app_support_email">Không có app nào hỗ trợ gửi mail</string>
+    <string name="no_more_level">Không còn màn chơi nào cả!</string>
+    <string name="level_unavailable">Màn chơi không có sẵn</string>
 </resources>

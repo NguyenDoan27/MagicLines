@@ -51,4 +51,6 @@
     <string name="save">Saved to Gallery</string>
     <string name="save_error">Failed to save image</string>
     <string name="no_app_support_email">No app support to send mail</string>
+    <string name="no_more_level">No more level</string>
+    <string name="level_unavailable">level unavailable</string>
 </resources>
