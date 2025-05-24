@@ -1,6 +1,7 @@
 package com.example.magiclines.common.adapter
 
 import android.content.Context
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -106,11 +107,6 @@ class LevelPlayerAdapter2 (val context: Context, val listener: FilterListener, v
 
     fun getItemsFiltered(): List<Level> {
         return filteredItems
-    }
-
-    fun setOriginalItems() {
-        submitList(originalItems)
-        filteredItems = originalItems
     }
 
     interface FilterListener {

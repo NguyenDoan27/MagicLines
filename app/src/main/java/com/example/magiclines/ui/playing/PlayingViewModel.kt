@@ -1,9 +1,7 @@
 package com.example.magiclines.ui.playing
 
-import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewModelScope
 import com.example.magiclines.base.BaseViewModel
 import com.example.magiclines.data.SettingDataStore
